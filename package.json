@@ -21,7 +21,9 @@
     },
     "dependencies": {
         "@tanstack/vue-table": "^8.17.0",
-        "@vueuse/core": "^10.9.0",
+        "@unovis/ts": "^1.4.1",
+        "@unovis/vue": "^1.4.1",
+        "@vueuse/core": "^10.10.0",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.0",
         "embla-carousel": "^8.0.1",

@@ -22,4 +22,13 @@ class Course extends Model
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
-    }}
+    }
+    public function classSchedule()
+    {
+        return $this->hasMany(ClassSchedule::class);
+    }
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class);
+    }
+}

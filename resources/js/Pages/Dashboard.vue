@@ -1,37 +1,52 @@
 <script setup lang="ts">
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/Components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
-
-import { Label } from "@/Components/ui/label";
-import { Button } from "@/Components/ui/button";
-import { Bell, CircleUser, Home, LineChart, Menu, Package, Package2, Search, ShoppingCart, Users } from 'lucide-vue-next'
-
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
+import { BarChart } from "@/components/ui/chart-bar";
 
-
-
+const data = [
+    {
+        name: "Jan",
+        total: Math.floor(Math.random() * 2000) + 500,
+        predicted: Math.floor(Math.random() * 2000) + 500,
+    },
+    {
+        name: "Feb",
+        total: Math.floor(Math.random() * 2000) + 500,
+        predicted: Math.floor(Math.random() * 2000) + 500,
+    },
+    {
+        name: "Mar",
+        total: Math.floor(Math.random() * 2000) + 500,
+        predicted: Math.floor(Math.random() * 2000) + 500,
+    },
+    {
+        name: "Apr",
+        total: Math.floor(Math.random() * 2000) + 500,
+        predicted: Math.floor(Math.random() * 2000) + 500,
+    },
+    {
+        name: "May",
+        total: Math.floor(Math.random() * 2000) + 500,
+        predicted: Math.floor(Math.random() * 2000) + 500,
+    },
+    {
+        name: "Jun",
+        total: Math.floor(Math.random() * 2000) + 500,
+        predicted: Math.floor(Math.random() * 2000) + 500,
+    },
+    {
+        name: "Jul",
+        total: Math.floor(Math.random() * 2000) + 500,
+        predicted: Math.floor(Math.random() * 2000) + 500,
+    },
+];
 const props = defineProps<{
-  breadcrumbs: BreadcrumbType[],
+    breadcrumbs: BreadcrumbType[];
 }>();
 </script>
 
 <template>
-
     <Head title="Dashboard" />
 
     <AuthenticatedLayout :breadcrumbs="props.breadcrumbs">
@@ -51,5 +66,18 @@ const props = defineProps<{
             </div>
         </div> -->
         <h1>Hello</h1>
+        <BarChart
+            index="name"
+            :data="data"
+            :categories="['total', 'predicted']"
+            :y-formatter="
+                (tick, i) => {
+                    return typeof tick === 'number'
+                        ? `$ ${new Intl.NumberFormat('us').format(tick).toString()}`
+                        : '';
+                }
+            "
+            :type="'stacked'"
+        />
     </AuthenticatedLayout>
 </template>

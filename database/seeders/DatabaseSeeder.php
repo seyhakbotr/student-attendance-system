@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         ]);
         //
         // Student::factory(10)->create();
+        $this->call(FacultiesSeeder::class);
         $this->call(ClassroomsTableSeeder::class);
         $this->call(StudentsTableSeeder::class);
 

@@ -42,7 +42,7 @@ function onDetect(detectedCodes) {
         })
         .filter((code) => code !== null);
 
-    if (parsedCodes.length > 0 && selectedCourse.value) {
+    if (parsedCodes.length > 0 ) {
         result.value = parsedCodes[0];
         // Trigger a toast notification
         toast(`QR Code Detected`, {
@@ -55,13 +55,13 @@ function onDetect(detectedCodes) {
         router.post(`/classroom/${props.classroom.id}/attendance`, {
             student_id: result.value?.student_id,
             classroom_id: props.classroom.id,
-            course_id: selectedCourse.value.id,
+            course_id: props.classroomSchedule.course_id,
             // date: new Date().toISOString().split("T")[0], // Current date in YYYY-MM-DD format
             attended: "present",
         });
     } else {
-        toast("Please select a course first", {
-            description: "No course selected",
+        toast("No Student Found in the specific classroom", {
+            description: "No student found",
         });
     }
 }
@@ -208,6 +208,7 @@ function toggleQRStream() {
 }
 const props = defineProps<{
     classroom: Classrooms[];
+    classroomSchedule: Object;
     courses: Course[];
     breadcrumbs: BreadcrumbType[];
 }>();
@@ -215,24 +216,9 @@ const props = defineProps<{
 
 <template>
     <AuthenticatedLayout :breadcrumbs="props.breadcrumbs">
-        <p>This is qrcode scan stuff</p>
-        <Select v-model="selectedCourse">
-            <SelectTrigger class="w-[180px]">
-                <!-- <span v-if="!selectedCourse">Select a course</span> -->
-                <SelectValue>
-                    <span v-if="!selectedCourse">Select a course</span>
-                    <span v-else>{{ selectedCourse.name }}</span>
-                </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-                <SelectGroup>
-                    <SelectLabel>Courses</SelectLabel>
-                    <SelectItem v-for="course in props.courses" :key="course.id" :value="course">
-                        {{ course.name }}
-                    </SelectItem>
-                </SelectGroup>
-            </SelectContent>
-        </Select>
+        <h1 class="text-4xl text-primary-accent font-extrabold">Today Date: {{classroomSchedule.day}}</h1>
+        <h2>Current Teacher: {{classroomSchedule.teacher.name}}</h2>
+
         <Button @click="toggleQRStream" class="ml-4 w-2/6">
             {{ qrStreamVisible ? "Hide QR Stream" : "Show QR Stream" }}
         </Button>

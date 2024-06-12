@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('gender', ['male', 'female'])->default('male');
             $table->text('qr_code_data')->nullable(); // Store QR code data
             $table->string('qr_code_image_path')->nullable(); // Store QR code image path
+              $table->foreignId('major_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

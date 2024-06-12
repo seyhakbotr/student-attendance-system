@@ -5,7 +5,8 @@ import { ArrowUpDown } from "lucide-vue-next";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Course } from "@/Pages/Classroom/Show.vue";
-
+import { router } from "@inertiajs/vue3";
+import type { Major } from "../major/columns";
 export interface Student {
     id: string;
     name: string;
@@ -16,6 +17,9 @@ export interface Student {
         status: "absent" | "present";
         date: string; // Optional: if you want to show the date as well
     }>;
+    major_id: number;
+    major: Major;
+    classroom_id: number;
 }
 
 export const columns: ColumnDef<Student>[] = [
@@ -77,8 +81,13 @@ export const columns: ColumnDef<Student>[] = [
             h("img", {
                 src: `/storage/${(info.getValue() as string).replace("public/", "")}`,
                 alt: "QR Code",
-                class: 'w-[80px] h-[80px]'
+                class: "w-[80px] h-[80px]",
             }),
+    },
+    {
+        accessorKey: "major",
+        header: "Major",
+        cell: (info) => info.row.original.major.name,
     },
     {
         accessorKey: "attendance",
@@ -135,14 +144,46 @@ export const columns: ColumnDef<Student>[] = [
     },
     {
         id: "actions",
-        enableHiding: false,
-        cell: ({ row }) => {
-            const student = row.original;
-            return h(
-                "div",
-                { class: "relative" },
-                h(DataTableDropDown, { student }),
-            );
-        },
+        header: "Actions",
+        cell: ({ row }) =>
+            h("div", { class: "flex space-x-2" }, [
+                h(
+                    Button,
+                    {
+                        variant: "destructive",
+                        onClick: () => handleDelete(row.original.id),
+                    },
+                    "Delete",
+                ),
+                h(
+                    Button,
+                    {
+                        variant: "default",
+                        onClick: () =>
+                            handleEdit(
+                                row.original.id,
+                                row.original.pivot.classroom_id,
+                            ),
+                    },
+                    "Edit",
+                ),
+            ]),
     },
 ];
+
+function handleDelete(id: string) {
+    console.log(`Delete student with ID: ${id}`);
+    router.delete(`/student/${id}`, {
+        onSuccess: () => {
+            return Promise.all([location.reload()]);
+        },
+        onError: () => {
+            console.log("Error");
+        },
+    });
+}
+
+function handleEdit(studentId: string, classroomId: number) {
+    console.log("Classroom ID:", classroomId); // Check the type and value of classroomId
+    router.visit(`/student/${studentId}/edit/${classroomId}`); // Use classroomId instead of classroom
+}

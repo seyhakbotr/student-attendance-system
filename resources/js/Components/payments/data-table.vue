@@ -3,6 +3,7 @@ import type {
     ColumnDef,
     ColumnFiltersState,
     SortingState,
+    TableOptions,
     VisibilityState,
 } from "@tanstack/vue-table";
 
@@ -33,8 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { h, ref } from "vue";
-import { Link } from "@inertiajs/vue3";
-
+import { reactive } from "vue";
 import {
     FlexRender,
     getCoreRowModel,
@@ -63,7 +63,7 @@ const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
 const rowSelection = ref({});
-const table = useVueTable({
+const tableOptions = reactive<TableOptions<Document>>({
     get data() {
         return props.data;
     },
@@ -75,12 +75,9 @@ const table = useVueTable({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: (updaterOrValue) =>
-        valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: (updaterOrValue) =>
-        valueUpdater(updaterOrValue, columnVisibility),
-    onRowSelectionChange: (updaterOrValue) =>
-        valueUpdater(updaterOrValue, rowSelection),
+    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
+    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
+    onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
     state: {
         get sorting() {
             return sorting.value;
@@ -96,6 +93,9 @@ const table = useVueTable({
         },
     },
 });
+
+const table = useVueTable(tableOptions);
+
 </script>
 
 <template>

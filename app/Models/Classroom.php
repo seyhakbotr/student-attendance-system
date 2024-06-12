@@ -9,8 +9,7 @@ class Classroom extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'room_number'];
-
+    protected $fillable = ['major_id', 'room_number', 'faculty_id','teacher_id'];
     public function courses()
     {
         return $this->hasMany(Course::class);
@@ -19,5 +18,22 @@ class Classroom extends Model
     public function students()
     {
         return $this->belongsToMany(Student::class, 'classroom_student');
+    }
+    public function faculty()
+    {
+        return $this->belongsTo(Faculty::class);
+    }
+    public function major()
+    {
+        return $this->belongsTo(Major::class);
+    }
+    public function classSchedules()
+    {
+        return $this->hasMany(ClassSchedule::class);
+    }
+
+    public function teachers()
+    {
+        return $this->hasMany(Teacher::class);
     }
 }
