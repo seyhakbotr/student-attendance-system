@@ -1,22 +1,30 @@
 import { ColumnDef } from "@tanstack/vue-table";
 import { h } from "vue";
-import DataTableDropDown from "./DataTableDropDown.vue";
-import { ArrowUpDown } from "lucide-vue-next";
 import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Course } from "@/Pages/Classroom/Show.vue";
 import { router } from "@inertiajs/vue3";
 import type { Major } from "../major/columns";
+
+interface Attendance {
+    id: number;
+    attended: "present" | "absent";
+    date: string | null; // Optional date
+    course: {
+        id: number;
+        name: string;
+    };
+}
+
 export interface Student {
     id: string;
     name: string;
     gender: "male" | "female";
     qr_code_image_path: string;
-    attendance: Array<{
-        course: Course | null;
-        status: "absent" | "present";
-        date: string; // Optional: if you want to show the date as well
-    }>;
+    attendances: Attendance[];
+    course: {
+        id: number;
+        name: string;
+    };
     major_id: number;
     major: Major;
     classroom_id: number;
@@ -64,7 +72,7 @@ export const columns: ColumnDef<Student>[] = [
                     onClick: () =>
                         column.toggleSorting(column.getIsSorted() === "asc"),
                 },
-                () => ["Name", h(ArrowUpDown, { class: "ml-2 h-4 w-4" })],
+                () => ["Name"],
             );
         },
         cell: (info) => info.getValue() as string,
@@ -85,35 +93,27 @@ export const columns: ColumnDef<Student>[] = [
             }),
     },
     {
-        accessorKey: "major",
-        header: "Major",
-        cell: (info) => info.row.original.major.name,
-    },
-    {
-        accessorKey: "attendance",
+        accessorKey: "attendances",
         header: "Attendance",
         cell: ({ row }) => {
-            const attendance = row.original.attendance;
-            if (Array.isArray(attendance) && attendance.length > 0) {
+            const attendances = row.original.attendances;
+            if (Array.isArray(attendances) && attendances.length > 0) {
                 return h(
                     "div",
-                    attendance.map((record) => {
-                        return h(
-                            "div",
-                            { key: record.course?.id || record.date },
-                            [
-                                h(
-                                    "span",
-                                    {
-                                        class:
-                                            record.status === "present"
-                                                ? "text-green-500"
-                                                : "text-red-500",
-                                    },
-                                    record.status,
-                                ),
-                            ],
-                        );
+                    attendances.map((attendance) => {
+                        return h("div", { key: attendance.id }, [
+                            h(
+                                "span",
+                                {
+                                    class:
+                                        attendance.attended === "present"
+                                            ? "text-green-500"
+                                            : "text-red-500",
+                                },
+                                attendance.attended,
+                            ),
+                            // Optionally display date if available
+                        ]);
                     }),
                 );
             } else {
@@ -123,18 +123,21 @@ export const columns: ColumnDef<Student>[] = [
     },
     {
         accessorKey: "course",
-        header: "Course",
+        header: "Courses",
         cell: ({ row }) => {
-            const attendance = row.original.attendance;
-            if (Array.isArray(attendance) && attendance.length > 0) {
+            const attendances = row.original.attendances;
+            if (Array.isArray(attendances) && attendances.length > 0) {
                 return h(
                     "div",
-                    attendance.map((record) => {
-                        return h(
-                            "div",
-                            { key: record.course?.id || record.date },
-                            [record.course ? record.course.name : "No course"],
-                        );
+                    attendances.map((attendance) => {
+                        return h("div", { key: attendance.id }, [
+                            h(
+                                "span",
+                                attendance.course
+                                    ? attendance.course.name
+                                    : "No Course",
+                            ),
+                        ]);
                     }),
                 );
             } else {
@@ -142,6 +145,28 @@ export const columns: ColumnDef<Student>[] = [
             }
         },
     },
+    //},
+    //{
+    //    accessorKey: "courses",
+    //    header: "Courses",
+    //    cell: ({ row }) => {
+    //        const courses = row.original.attendances.map(att => att.course.name);
+    //        if (Array.isArray(courses) && courses.length > 0) {
+    //            return h(
+    //                "div",
+    //                courses.map((course, index) => {
+    //                    return h(
+    //                        "div",
+    //                        { key: index },
+    //                        [course],
+    //                    );
+    //                }),
+    //            );
+    //        } else {
+    //            return h("div", "No courses");
+    //        }
+    //    },
+    //},
     {
         id: "actions",
         header: "Actions",

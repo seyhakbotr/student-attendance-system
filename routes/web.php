@@ -9,15 +9,18 @@ use App\Http\Controllers\ProfileController;
 
 
 
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StudentController;
 
 
 
 
+use App\Http\Controllers\TeacherController;
 use App\Models\Classroom;
 use App\Models\Major;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -71,6 +74,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/major', [MajorController::class,'store'])->name('major.store');
     Route::delete('/majors', [MajorController::class, 'bulkDestroy'])->name('majors.bulkDestroy');
 });
+
+Route::middleware('auth')->group(function () {
+    Route::post('/teacher', [TeacherController::class,'store'])->name('teacher.store');
+    Route::get('/classroom/{classroomId}/teacher', [TeacherController::class,'show'])->name('classroom.teachers');
+    Route::delete('/teacher/{teacher}', [TeacherController::class,'destroy'])->name('teacher.destroy');
+    Route::patch('/teacher/{teacher}', [TeacherController::class,'update'])->name('teacher.update');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/schedule', [ScheduleController::class,'store'])->name('schedule.store');
+    Route::patch('/schedule/{schedule}', [ScheduleController::class,'update'])->name('schedule.update');
+    Route::delete('/schedule/{schedule}', [ScheduleController::class,'destroy'])->name('schedule.destroy');
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

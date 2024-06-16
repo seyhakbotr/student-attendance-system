@@ -35,16 +35,6 @@ class ClassroomController extends Controller
                                   ->where('day', $currentDay)
                                   ->get();
 
-        if ($request->wantsJson()) {
-            // Return the data as JSON
-            return response()->json([
-                'classrooms' => $classrooms,
-                'majors' => $majors,
-                'faculties' => $faculties,
-                'currentDay' => $currentDay,
-                'schedules' => $schedules,
-            ]);
-        }
 
         // Return the data for rendering with Inertia
         return Inertia::render('Classroom/Index', [
@@ -64,42 +54,22 @@ class ClassroomController extends Controller
     public function show(Classroom $classroom)
     {
         // Eager load the relationships
-        $classroom->load(['students', 'courses', 'major']);
-
-        // Map students with their attendance records and include major information
-        $studentsWithAttendance = $classroom->students->map(function ($student) use ($classroom) {
-            $attendanceRecords = $student->attendances()
-                ->whereIn('course_id', $classroom->courses->pluck('id'))
-                ->where('classroom_id', $classroom->id)
-                ->get()
-                ->map(function ($record) use ($classroom) {
-                    $course = $classroom->courses->find($record->course_id);
-                    return [
-                        'course' => $course,
-                        'major' => $classroom->major,
-                        'status' => $record->attended,
-                        'date' => $record->date,
-                    ];
-                });
-
-            // Include the major information in the student data
-            $student->major = $classroom->major;
-            $student->attendance = $attendanceRecords;
-            return $student;
-        });
+        $classroom->load(['students.attendances.course', 'courses', 'major']);
 
         // Fetch class schedules for all weekdays
-        $schedules = ClassSchedule::with(['course', 'classroom.major.faculty','teacher'])
+        $schedules = ClassSchedule::with(['course', 'classroom.major.faculty', 'teacher'])
             ->whereIn('day', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
             ->where('classroom_id', $classroom->id)
             ->get();
-
+        $currentDateTime = Carbon::now()->englishDayOfWeek;
         // Return the view with the necessary data
         return Inertia::render('Classroom/Show', [
             'classroom' => $classroom,
-            'students' => $studentsWithAttendance,
-            'courses' => $classroom->courses,
-            'schedules' => $schedules, // Include the schedules in the view data
+            'students' => $classroom->students,
+                           'courses' => $classroom->courses,
+            'schedules' => $schedules,
+            'teachers' => $classroom->teachers,
+            "currentDay" => $currentDateTime,
             'breadcrumbs' => [
                 ['label' => 'Home', 'url' => route('dashboard')],
                 ['label' => 'Classrooms', 'url' => route('classroom.index')],
@@ -119,11 +89,8 @@ class ClassroomController extends Controller
     {
 
         $validatedData = $this->validateData($request);
-
-        // Fetch the faculty to determine the associated majors
         $faculty = Faculty::findOrFail($validatedData['faculty_id']);
 
-        // Validate that the selected major belongs to the selected faculty
         if (!$faculty->majors->contains('id', $validatedData['major_id'])) {
             return redirect()->back()->withErrors([
                 'create' => 'The selected major does not belong to the selected faculty.'
@@ -204,7 +171,6 @@ class ClassroomController extends Controller
                                           ->where('day', $currentDay)
                                           ->with(['course', 'teacher'])
                                           ->first();
-
         // Pass the schedule data to the view
         return Inertia::render('Classroom/Attendance', [
             'classroom' => $classroom,

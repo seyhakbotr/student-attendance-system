@@ -42,7 +42,7 @@ function onDetect(detectedCodes) {
         })
         .filter((code) => code !== null);
 
-    if (parsedCodes.length > 0 ) {
+    if (parsedCodes.length > 0 && selectedCourse.value) {
         result.value = parsedCodes[0];
         // Trigger a toast notification
         toast(`QR Code Detected`, {
@@ -216,9 +216,15 @@ const props = defineProps<{
 
 <template>
     <AuthenticatedLayout :breadcrumbs="props.breadcrumbs">
-        <h1 class="text-4xl text-primary-accent font-extrabold">Today Date: {{classroomSchedule.day}}</h1>
-        <h2>Current Teacher: {{classroomSchedule.teacher.name}}</h2>
-
+        <div v-if="!classroomSchedule">
+            <p>This is the weekend. No classes scheduled.</p>
+        </div>
+        <div v-else>
+            <h1 class="text-4xl text-primary-accent font-extrabold">
+                Today Date: {{ classroomSchedule.day }}
+            </h1>
+            <h2>Current Teacher: {{ classroomSchedule.teacher.name }}</h2>
+        </div>
         <Button @click="toggleQRStream" class="ml-4 w-2/6">
             {{ qrStreamVisible ? "Hide QR Stream" : "Show QR Stream" }}
         </Button>
@@ -234,8 +240,14 @@ const props = defineProps<{
         </p>
 
         <div v-if="qrStreamVisible" class="">
-            <qrcode-stream :constraints="{ deviceId: selectedDevice.deviceId }" :track="trackFunctionSelected.value"
-                :formats="selectedBarcodeFormats" @error="onError" @detect="onDetect" v-if="selectedDevice !== null" />
+            <qrcode-stream
+                :constraints="{ deviceId: selectedDevice.deviceId }"
+                :track="trackFunctionSelected.value"
+                :formats="selectedBarcodeFormats"
+                @error="onError"
+                @detect="onDetect"
+                v-if="selectedDevice !== null"
+            />
             <p v-else class="error">No cameras on this device</p>
         </div>
     </AuthenticatedLayout>

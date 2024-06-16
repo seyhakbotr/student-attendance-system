@@ -65,6 +65,7 @@ interface Major {
     name: string;
     created_at: string;
     updated_at: string;
+    faculty_id: number;
     faculty: Faculty;
 }
 
@@ -88,26 +89,39 @@ const classroomForm = reactive({
     major_id: selectedMajor.value?.id,
     room_number: "",
 });
-const searchFilter = (searchInput: string, selectedFaculty: Faculty | null) => {
-    return props.classrooms.data.filter((classroom) => {
-        const nameMatch = classroom.major.name
-            .toLowerCase()
-            .includes(searchInput.toLowerCase());
+const filteredMajors = computed(() => {
+    // Check if a faculty is selected
+    if (!selectedFaculty.value) {
+        // No faculty selected, return all majors
+        return props.majors;
+    } else {
+        return props.majors.filter(major => major.faculty_id === (selectedFaculty.value ? selectedFaculty.value.id : false));
+    }
+});
 
-        const roomNumberMatch = String(classroom.room_number)
-            .toLowerCase()
-            .includes(searchInput.toLowerCase());
+
+const updateSelectedFaculty = (faculty: Faculty | null) => {
+    selectedFaculty.value = faculty;
+    // Reset the selected major when a new faculty is selected
+    selectedMajor.value = null;
+};
+const searchFilter = (searchInput: string, selectedFaculty: Faculty | null, selectedMajor: Major | null) => {
+    return props.classrooms.data.filter((classroom) => {
+        const nameMatch = classroom.major.name.toLowerCase().includes(searchInput.toLowerCase());
+        const roomNumberMatch = String(classroom.room_number).toLowerCase().includes(searchInput.toLowerCase());
 
         // Check if the selected faculty matches the classroom's faculty
-        const facultyMatch =
-            !selectedFaculty ||
-            classroom.major.faculty.id === selectedFaculty.id;
+        const facultyMatch = !selectedFaculty || classroom.major.faculty.id === selectedFaculty.id;
 
-        return (nameMatch || roomNumberMatch) && facultyMatch;
+        // Check if the selected major matches the classroom's major
+        const majorMatch = !selectedMajor || classroom.major.id === selectedMajor.id;
+
+        return (nameMatch || roomNumberMatch) && facultyMatch && majorMatch;
     });
 };
+
 const filterClassrooms = computed(() =>
-    searchFilter(searchInput.value, selectedFaculty.value),
+    searchFilter(searchInput.value, selectedFaculty.value, selectedMajor.value),
 );
 const storeClassroom = () => {
     router.post("/classroom", classroomForm, {
@@ -203,7 +217,7 @@ useIntersectionObserver(last, ([entry]) => {
                 placeholder="Search a classroom by major name or room number.."
                 class="w-full mb-4 md:mb-0 p-2 md:w-5/12 sm:p-4"
             />
-            <Select v-model="selectedFaculty">
+            <Select v-model="selectedFaculty" @change="updateSelectedFaculty">
                 <SelectTrigger class="w-[180px]">
                     <SelectValue>
                         <span v-if="!selectedFaculty">Select a faculty</span>
@@ -224,6 +238,26 @@ useIntersectionObserver(last, ([entry]) => {
                 </SelectContent>
             </Select>
 
+            <Select v-model="selectedMajor">
+                <SelectTrigger class="w-[180px]">
+                    <SelectValue>
+                        <span v-if="!selectedMajor">Select a major</span>
+                        <span v-else>{{ selectedMajor.name }}</span>
+                    </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        <SelectLabel>Major</SelectLabel>
+                        <SelectItem
+                            v-for="major in filteredMajors"
+                            :key="major.id"
+                            :value="major"
+                        >
+                            {{ major.name }}
+                        </SelectItem>
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
             <Dialog>
                 <DialogTrigger as-child>
                     <Button variant="outline" class="mt-4 md:mt-0">
