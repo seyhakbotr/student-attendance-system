@@ -107,7 +107,7 @@ const handleDeleteButton = () => {
 
 <template>
     <div>
-        <div class="flex items-center py-4 gap-6">
+        <div class="flex items-center py-4 gap-4">
             <Input
                 class="max-w-sm"
                 placeholder="Filter name..."

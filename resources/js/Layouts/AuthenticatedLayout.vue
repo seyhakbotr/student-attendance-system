@@ -30,6 +30,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 import { Input } from "@/Components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
+import { Head } from '@inertiajs/vue3'
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 
@@ -38,6 +39,7 @@ const props = defineProps({
         type: Array as () => BreadcrumbType[],
         default: () => [],
     },
+    title: String
 });
 </script>
 
@@ -45,6 +47,7 @@ const props = defineProps({
     <div
         class="grid min-h-screen md:grid-cols-[220px_1fr] lg:grid-cols-[240px_1fr]"
     >
+        <Head title="BELTEI" />
         <div class="hidden border-r bg-muted/40 md:block">
             <div class="flex h-full max-h-screen flex-col gap-2">
                 <div
@@ -91,6 +94,19 @@ const props = defineProps({
                         >
                             Major
                         </NavLink>
+                        <NavLink
+                            :href="route('student.index')"
+                            :active="route().current('student.index')"
+                        >
+                            Student
+                        </NavLink>
+   <NavLink
+                            :href="route('teacher.index')"
+                            :active="route().current('teacher.index')"
+                        >
+                            Teacher
+                        </NavLink>
+
                     </nav>
                 </div>
             </div>

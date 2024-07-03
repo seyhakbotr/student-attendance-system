@@ -52,6 +52,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { handleBulkDelete } from "./columns";
 
 const props = defineProps<{
     columns: ColumnDef<TData, TValue>[];
@@ -95,7 +96,12 @@ const tableOptions = reactive<TableOptions<Document>>({
 });
 
 const table = useVueTable(tableOptions);
-
+const handleDeleteButton = () => {
+    const selectedRows = table.getSelectedRowModel();
+    const selectedIds = selectedRows.flatRows.map((row) => row.original.id);
+    console.log("selectedIds", selectedIds);
+    handleBulkDelete(selectedIds);
+};
 </script>
 
 <template>
@@ -108,6 +114,8 @@ const table = useVueTable(tableOptions);
             <Button variant="link">
                 <Link :href="`/classroom/${props.classroomId}/attendance`">View Attendance</Link>
             </Button>
+
+            <Button variant="destructive" @click="handleDeleteButton()">Bulk Delete</Button>
 
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>

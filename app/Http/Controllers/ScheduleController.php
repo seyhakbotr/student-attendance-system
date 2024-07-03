@@ -14,7 +14,9 @@ class ScheduleController extends Controller
             "course_id" => "required|exists:courses,id",
             "teacher_id" => "required|exists:teachers,id",
             'classroom_id' => 'required|exists:classrooms,id',
-                'day' => 'required|string'
+            'day' => 'required|string',
+          'time_in' => 'required|date_format:H:i',
+'time_out' => 'required|date_format:H:i',
         ]);
         $existingSchedule = ClassSchedule::where('teacher_id', $validatedData['teacher_id'])
             ->where('day', $validatedData['day'])
@@ -32,7 +34,10 @@ class ScheduleController extends Controller
             "course_id" => "required|exists:courses,id",
             "teacher_id" => "required|exists:teachers,id",
             'classroom_id' => 'required|exists:classrooms,id',
-            'day' => 'required|string'
+            'day' => 'required|string',
+  'time_in' => 'required|date_format:H:i',
+'time_out' => 'required|date_format:H:i',
+
         ]);
 
         $schedule->update($validatedData);

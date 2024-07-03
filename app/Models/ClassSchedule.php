@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ClassSchedule extends Model
 {
     use HasFactory;
-    protected $fillable = ['course_id', 'classroom_id', 'day','teacher_id'];
+    protected $fillable = ['course_id', 'classroom_id', 'day','teacher_id','time_in','time_out'];
 
     public function course()
     {

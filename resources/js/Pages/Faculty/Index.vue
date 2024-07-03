@@ -37,6 +37,7 @@ const createFaculty = () => {
             toast.success("Faculty added", {
                 description: "The faculty has been added succesfully",
             });
+            fetchFaculties();
         },
         onError: () => {
             const error = usePage().props.errors.name;
@@ -46,6 +47,15 @@ const createFaculty = () => {
             });
         },
     });
+};
+
+const fetchFaculties = async () => {
+    try {
+        const response = await router.get("/faculty");
+        data.value = response.data;
+    } catch (error) {
+        console.error("Error fetching faculties:", error);
+    }
 };
 onMounted(() => {
     data.value = props.faculties;

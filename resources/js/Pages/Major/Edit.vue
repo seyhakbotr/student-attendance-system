@@ -35,7 +35,7 @@ const props = defineProps<{
 
 // Initialize selectedFaculty with the initially selected faculty
 const selectedFaculty = ref<Major | null>(props.major.faculty);
-
+console.log("Props major faculty",props.major.faculty)
 // Initialize majorName with the initially selected major name
 const majorName = reactive({
     name: props.major.name,

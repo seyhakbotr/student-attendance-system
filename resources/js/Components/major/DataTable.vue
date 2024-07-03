@@ -96,7 +96,7 @@ const tableOptions = reactive<TableOptions<Document>>({
 });
 
 const table = useVueTable(tableOptions);
-const handleClick = () => {
+const deleteBulk = () => {
     const selectedRows = table.getSelectedRowModel();
     const selectedIds = selectedRows.flatRows.map((row) => row.original.id);
     console.log("selectedIds", selectedIds);
@@ -117,7 +117,7 @@ const handleClick = () => {
                     table.getColumn('name')?.setFilterValue($event)
                 "
             />
-            <Button variant="destructive" click="handleClick">Bulk Delete</Button>
+            <Button variant="destructive" @click="deleteBulk">Bulk Delete</Button>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <Button variant="outline" class="ml-auto">

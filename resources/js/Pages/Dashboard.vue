@@ -65,19 +65,19 @@ const props = defineProps<{
                 </div>
             </div>
         </div> -->
-        <h1>Hello</h1>
-        <BarChart
-            index="name"
-            :data="data"
-            :categories="['total', 'predicted']"
-            :y-formatter="
-                (tick, i) => {
-                    return typeof tick === 'number'
-                        ? `$ ${new Intl.NumberFormat('us').format(tick).toString()}`
-                        : '';
-                }
-            "
-            :type="'stacked'"
-        />
+        <div class="w-96 h-64">
+            <BarChart
+                :data="data"
+                index="name"
+                :categories="['total', 'predicted']"
+                :y-formatter="
+                    (tick, i) => {
+                        return typeof tick === 'number'
+                            ? `$ ${new Intl.NumberFormat('us').format(tick).toString()}`
+                            : '';
+                    }
+                "
+            />
+        </div>
     </AuthenticatedLayout>
 </template>

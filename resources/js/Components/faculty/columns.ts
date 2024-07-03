@@ -95,7 +95,6 @@ function handleDelete(id: number) {
     console.log(`Delete faculty with ID: ${id}`);
     router.delete(`/faculty/${id}`, {
         onSuccess: () => {
-
             toast.success("Faculty Deleted", {
                 description: "Faculty has been deleted successfully",
             });
@@ -122,14 +121,12 @@ export function handleBulkDelete(selectedIds: number[]) {
                 description: "Selected facultys have been deleted successfully",
             });
             // Call the reload function after success
-            reloadAfterDelay();
         },
         onError: () => {
             toast.error("Error deleting facultys");
         },
     });
 }
-
 
 function handleEdit(id: number) {
     console.log("Hit Edit", id);

@@ -29,14 +29,12 @@ class ClassroomController extends Controller
 
         // Get the current day of the week
         $currentDay = Carbon::now()->format('l');
-
         // Fetch class schedules for the current day
         $schedules = ClassSchedule::with(['course', 'classroom.major.faculty'])
                                   ->where('day', $currentDay)
                                   ->get();
 
 
-        // Return the data for rendering with Inertia
         return Inertia::render('Classroom/Index', [
             'classrooms' => $classrooms,
             'majors' => $majors,
@@ -54,7 +52,7 @@ class ClassroomController extends Controller
     public function show(Classroom $classroom)
     {
         // Eager load the relationships
-        $classroom->load(['students.attendances.course', 'courses', 'major']);
+        $classroom->load(['students.major.faculty', 'students.attendances.course', 'courses', 'major.faculty']);
 
         // Fetch class schedules for all weekdays
         $schedules = ClassSchedule::with(['course', 'classroom.major.faculty', 'teacher'])
@@ -87,14 +85,21 @@ class ClassroomController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'year_id' => (int)$request->input('year_id'),
+            'semester_id' => (int)$request->input('semester_id'),
+        ]);
 
         $validatedData = $this->validateData($request);
+
+
         $faculty = Faculty::findOrFail($validatedData['faculty_id']);
 
         if (!$faculty->majors->contains('id', $validatedData['major_id'])) {
+
             return redirect()->back()->withErrors([
                 'create' => 'The selected major does not belong to the selected faculty.'
-            ]);
+            ])->withInput();
         }
 
         Classroom::create($validatedData);
@@ -189,6 +194,8 @@ class ClassroomController extends Controller
             'room_number' => 'required|unique:classrooms,room_number,' . $id,
             'major_id' => 'required|exists:majors,id',
             'faculty_id' => 'required|exists:faculties,id',
+            'year_id' => 'required|integer|min:1|max:4|exists:years,id',
+            'semester_id' => 'required|integer|min:1|max:2|exists:semesters,id'
         ]);
     }
 }

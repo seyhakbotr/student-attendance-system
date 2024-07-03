@@ -8,343 +8,35 @@
                     {{ classroom.major.name }}
                 </div>
                 <div class="flex space-x-2">
-                    <Dialog>
-                        <div>
-                            <DialogTrigger as-child>
-                                <Button variant="secondary"
-                                    >Add Schedule</Button
-                                >
-                            </DialogTrigger>
-                        </div>
-                        <DialogContent class="sm:max-w-[425px]">
-                            <form @submit.prevent="assignSchedule">
-                                <DialogHeader>
-                                    <DialogTitle>Add Schedule</DialogTitle>
-                                    <DialogDescription>
-                                        Add a new schedule for a teacher on a
-                                        specific day.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div class="grid gap-4 py-4">
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="teacher" class="text-right"
-                                            >Teacher</Label
-                                        >
-                                        <Select
-                                            v-model="scheduleData.teacher_id"
-                                        >
-                                            <SelectTrigger class="w-[180px]">
-                                                <SelectValue>
-                                                    <span
-                                                        v-if="
-                                                            !scheduleData.teacher_id
-                                                        "
-                                                        >Select a teacher</span
-                                                    >
-                                                    <span v-else>{{
-                                                        selectedTeacherName
-                                                    }}</span>
-                                                </SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <template
-                                                        v-for="teacher in teachers"
-                                                        :key="teacher.id"
-                                                    >
-                                                        <SelectItem
-                                                            :value="teacher.id"
-                                                            >{{
-                                                                teacher.name
-                                                            }}</SelectItem
-                                                        >
-                                                    </template>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="course" class="text-right"
-                                            >Course</Label
-                                        >
-                                        <Select
-                                            v-model="scheduleData.course_id"
-                                        >
-                                            <SelectTrigger class="w-[180px]">
-                                                <SelectValue>
-                                                    <span
-                                                        v-if="
-                                                            !scheduleData.course_id
-                                                        "
-                                                        >Select a course</span
-                                                    >
-                                                    <span v-else>{{
-                                                        selectedCourseName
-                                                    }}</span>
-                                                </SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <template
-                                                        v-for="course in courses"
-                                                        :key="course.id"
-                                                    >
-                                                        <SelectItem
-                                                            :value="course.id"
-                                                            >{{
-                                                                course.name
-                                                            }}</SelectItem
-                                                        >
-                                                    </template>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="day" class="text-right"
-                                            >Day</Label
-                                        >
-                                        <Select v-model="scheduleData.day">
-                                            <SelectTrigger class="w-[180px]">
-                                                <SelectValue>
-                                                    <span
-                                                        v-if="!scheduleData.day"
-                                                        >Select a day</span
-                                                    >
-                                                    <span v-else>{{
-                                                        scheduleData.day
-                                                    }}</span>
-                                                </SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectItem
-                                                        v-for="day in weekdays"
-                                                        :key="day"
-                                                        :value="day"
-                                                        >{{ day }}</SelectItem
-                                                    >
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <DialogFooter class="flex items-end">
-                                    <DialogClose>
-                                        <Button type="submit"
-                                            >Save Schedule</Button
-                                        >
-                                    </DialogClose>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
+                    <AssignSchedule
+                        :teachers="teachers"
+                        :courses="courses"
+                        :weekdays="weekdays"
+                        :scheduleData="scheduleData"
+                        :selectedTeacherName="selectedTeacherName"
+                        :selectedCourseName="selectedCourseName"
+                        :assignSchedule="assignSchedule"
 
+                    />
                     <!-- Add Student !-->
-                    <Dialog>
-                        <div>
-                            <DialogTrigger as-child>
-                                <Button
-                                    variant="outline"
-                                    class="sm:p-2 sm:text-sm"
-                                    :disabled="canAddStudent"
-                                >
-                                    Add Student
-                                </Button>
-                            </DialogTrigger>
-                        </div>
-                        <!-- Rest of the dialog content remains unchanged -->
-                        <DialogContent class="sm:max-w-[425px]">
-                            <form @submit.prevent="createStudent">
-                                <DialogHeader>
-                                    <DialogTitle>Add Student</DialogTitle>
-                                    <DialogDescription>
-                                        Create a new student. Click save when
-                                        you're done.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div class="grid gap-4 py-4">
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="name" class="text-right"
-                                            >Student Name</Label
-                                        >
-                                        <Input
-                                            id="name"
-                                            placeholder="John Doe..."
-                                            class="col-span-3"
-                                            v-model="form.name"
-                                        />
-                                    </div>
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="gender" class="text-right"
-                                            >Student Gender</Label
-                                        >
-                                        <Select v-model="form.gender">
-                                            <SelectTrigger class="w-[180px]">
-                                                <SelectValue
-                                                    placeholder="Select student gender"
-                                                />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectItem value="male"
-                                                        >Male</SelectItem
-                                                    >
-                                                    <SelectItem value="female"
-                                                        >Female</SelectItem
-                                                    >
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <DialogFooter class="flex items-end">
-                                    <DialogClose>
-                                        <Button type="submit"
-                                            >Save changes</Button
-                                        >
-                                    </DialogClose>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
+                    <AddStudent
+                        :form="form"
+                        :can-add-student="canAddStudent"
+                        :create-student="createStudent"
+                    />
+                    <AddTeacher
+                        :teacher-data="teacherData"
+                        :create-teacher="createTeacher"
+                        :can-add-teacher="canAddStudent"
+                    />
+                    <AddCourse
+                        :course-data="courseData"
+                        :teachers="teachers"
+                        :selected-teacher-name="selectedTeacherName"
+                        :create-course="createCourse"
+                    />
+
                     <!-- End of Add Student button !--->
-                    <Dialog>
-                        <div>
-                            <DialogTrigger as-child>
-                                <Button
-                                    variant="secondary"
-                                    class="sm:p-2 sm:text-sm"
-                                    >Add Teacher</Button
-                                >
-                            </DialogTrigger>
-                        </div>
-                        <DialogContent class="sm:max-w-[425px]">
-                            <form @submit.prevent="createTeacher">
-                                <DialogHeader>
-                                    <DialogTitle>Add Teacher</DialogTitle>
-                                    <DialogDescription>
-                                        Create a new Teacher. Click save when
-                                        you're done.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div class="grid gap-4 py-4">
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="name" class="text-right"
-                                            >Teacher Name</Label
-                                        >
-                                        <Input
-                                            id="name"
-                                            placeholder="jane doe"
-                                            class="col-span-3"
-                                            v-model="teacherData.name"
-                                        />
-                                    </div>
-                                </div>
-                                <DialogFooter class="flex items-end">
-                                    <DialogClose>
-                                        <Button type="submit"
-                                            >Save changes</Button
-                                        >
-                                    </DialogClose>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                    <Dialog>
-                        <div>
-                            <DialogTrigger as-child>
-                                <Button
-                                    variant="secondary"
-                                    class="sm:p-2 sm:text-sm"
-                                    >Add Course</Button
-                                >
-                            </DialogTrigger>
-                        </div>
-                        <DialogContent class="sm:max-w-[425px]">
-                            <form @submit.prevent="createCourse">
-                                <DialogHeader>
-                                    <DialogTitle>Add Course</DialogTitle>
-                                    <DialogDescription>
-                                        Create a new course. Click save when
-                                        you're done.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div class="grid gap-4 py-4">
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="teacher" class="text-right"
-                                            >Teacher</Label
-                                        >
-
-                                        <Select v-model="courseData.teacher_id">
-                                            <SelectTrigger class="w-[180px]">
-                                                <SelectValue>
-                                                    <span
-                                                        v-if="
-                                                            !courseData.teacher_id
-                                                        "
-                                                        >Select a teacher</span
-                                                    >
-                                                    <span v-else>{{
-                                                        selectedTeacherName
-                                                    }}</span>
-                                                </SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <template
-                                                        v-for="teacher in teachers"
-                                                        :key="teacher.id"
-                                                    >
-                                                        <SelectItem
-                                                            :value="teacher.id"
-                                                        >
-                                                            {{ teacher.name }}
-                                                        </SelectItem>
-                                                    </template>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div
-                                        class="grid grid-cols-4 items-center gap-4"
-                                    >
-                                        <Label for="name" class="text-right"
-                                            >Course Name</Label
-                                        >
-                                        <Input
-                                            id="name"
-                                            placeholder="Course Name..."
-                                            class="col-span-3"
-                                            v-model="courseData.name"
-                                        />
-                                    </div>
-                                </div>
-
-                                <DialogFooter class="flex items-end">
-                                    <DialogClose>
-                                        <Button type="submit"
-                                            >Save changes</Button
-                                        >
-                                    </DialogClose>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
                 </div>
             </div>
             <div class="flex flex-col">
@@ -374,242 +66,30 @@
                             >View All teacher</Link
                         >
                     </Button>
+                    <Button variant="link">
+                        <Link :href="`/classroom/${props.classroom.id}/importStudent`"
+                            >Import Students</Link
+                        >
+                    </Button>
                 </p>
                 <p v-else class="text-sm sm:text-lg text-gray-400 mt-2 sm:mt-0">
                     No designated room number yet
                 </p>
             </div>
-            <Button @click="toggleVisibility">{{
-                isVisible ? "Hide Schedule" : "Show Schedule"
-            }}</Button>
-            <div v-if="isVisible" class="flex justify-center w-full">
-                <Table>
-                    <TableCaption>Schedule</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Teacher</TableHead>
-                            <TableHead>Course</TableHead>
-                            <TableHead>Day</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow
-                            v-for="schedule in schedules"
-                            :key="schedule.id"
-                        >
-                            <TableCell>{{ schedule.id }}</TableCell>
-
-                            <TableCell v-if="schedule.teacher">{{
-                                schedule.teacher.name
-                            }}</TableCell>
-                            <TableCell v-else>N/A</TableCell>
-
-                            <TableCell v-if="schedule.course">{{
-                                schedule.course.name
-                            }}</TableCell>
-                            <TableCell v-else>N/A</TableCell>
-
-                            <TableCell>{{ schedule.day }}</TableCell>
-                            <TableCell class="flex gap-2">
-                                <Button variant="destructive" @click="deleteSchedule(schedule.id)">Delete</Button>
-                                <Dialog>
-                                    <div>
-                                        <DialogTrigger as-child>
-                                            <Button
-                                                variant="secondary"
-                                                @click="
-                                                    populateScheduleData(
-                                                        schedule.id,
-                                                    )
-                                                "
-                                            >
-                                                Edit Schedule
-                                            </Button>
-                                        </DialogTrigger>
-                                    </div>
-                                    <DialogContent class="sm:max-w-[425px]">
-                                        <form
-                                            @submit.prevent="
-                                                editSchedule(schedule.id)
-                                            "
-                                        >
-                                            <DialogHeader>
-                                                <DialogTitle
-                                                    >Edit Schedule</DialogTitle
-                                                >
-                                                <DialogDescription>
-                                                    Edit an existing schedule
-                                                    for a teacher on a specific
-                                                    day.
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div class="grid gap-4 py-4">
-                                                <div
-                                                    class="grid grid-cols-4 items-center gap-4"
-                                                >
-                                                    <Label
-                                                        for="teacher"
-                                                        class="text-right"
-                                                        >Teacher</Label
-                                                    >
-                                                    <Select
-                                                        v-model="
-                                                            scheduleData.teacher_id
-                                                        "
-                                                    >
-                                                        <SelectTrigger
-                                                            class="w-[180px]"
-                                                        >
-                                                            <SelectValue>
-                                                                <span
-                                                                    v-if="
-                                                                        !scheduleData.teacher_id
-                                                                    "
-                                                                >
-                                                                    Select a
-                                                                    teacher
-                                                                </span>
-                                                                <span v-else>{{
-                                                                    selectedTeacherNameEdit
-                                                                }}</span>
-                                                            </SelectValue>
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectGroup>
-                                                                <template
-                                                                    v-for="teacher in teachers"
-                                                                    :key="
-                                                                        teacher.id
-                                                                    "
-                                                                >
-                                                                    <SelectItem
-                                                                        :value="
-                                                                            teacher.id
-                                                                        "
-                                                                    >
-                                                                        {{
-                                                                            teacher.name
-                                                                        }}
-                                                                    </SelectItem>
-                                                                </template>
-                                                            </SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div
-                                                    class="grid grid-cols-4 items-center gap-4"
-                                                >
-                                                    <Label
-                                                        for="course"
-                                                        class="text-right"
-                                                        >Course</Label
-                                                    >
-                                                    <Select
-                                                        v-model="
-                                                            scheduleData.course_id
-                                                        "
-                                                    >
-                                                        <SelectTrigger
-                                                            class="w-[180px]"
-                                                        >
-                                                            <SelectValue>
-                                                                <span
-                                                                    v-if="
-                                                                        !scheduleData.course_id
-                                                                    "
-                                                                >
-                                                                    Select a
-                                                                    course
-                                                                </span>
-                                                                <span v-else>{{
-                                                                    selectedCourseName
-                                                                }}</span>
-                                                            </SelectValue>
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectGroup>
-                                                                <template
-                                                                    v-for="course in courses"
-                                                                    :key="
-                                                                        course.id
-                                                                    "
-                                                                >
-                                                                    <SelectItem
-                                                                        :value="
-                                                                            course.id
-                                                                        "
-                                                                    >
-                                                                        {{
-                                                                            course.name
-                                                                        }}
-                                                                    </SelectItem>
-                                                                </template>
-                                                            </SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div
-                                                    class="grid grid-cols-4 items-center gap-4"
-                                                >
-                                                    <Label
-                                                        for="day"
-                                                        class="text-right"
-                                                        >Day</Label
-                                                    >
-                                                    <Select
-                                                        v-model="
-                                                            scheduleData.day
-                                                        "
-                                                    >
-                                                        <SelectTrigger
-                                                            class="w-[180px]"
-                                                        >
-                                                            <SelectValue>
-                                                                <span
-                                                                    v-if="
-                                                                        !scheduleData.day
-                                                                    "
-                                                                >
-                                                                    Select a day
-                                                                </span>
-                                                                <span v-else>{{
-                                                                    scheduleData.day
-                                                                }}</span>
-                                                            </SelectValue>
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectGroup>
-                                                                <SelectItem
-                                                                    v-for="day in weekdays"
-                                                                    :key="day"
-                                                                    :value="day"
-                                                                >
-                                                                    {{ day }}
-                                                                </SelectItem>
-                                                            </SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                            </div>
-                                            <DialogFooter
-                                                class="flex items-end"
-                                            >
-                                                <DialogClose>
-                                                    <Button type="submit"
-                                                        >Save Schedule</Button
-                                                    >
-                                                </DialogClose>
-                                            </DialogFooter>
-                                        </form>
-                                    </DialogContent>
-                                </Dialog>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </div>
+            <ScheduleTable
+                :schedules="schedules"
+                :teachers="teachers"
+                :courses="courses"
+                :scheduleData="scheduleData"
+                :selectedTeacherNameEdit="selectedTeacherNameEdit"
+                :selectedCourseName="selectedCourseName"
+                :weekdays="weekdays"
+                :isVisible="isVisible"
+                :toggleVisibility="toggleVisibility"
+                :deleteSchedule="deleteSchedule"
+                :populateScheduleData="populateScheduleData"
+                :editSchedule="editSchedule"
+            />
         </div>
 
         <DataTable
@@ -627,45 +107,17 @@ import { columns } from "@/Components/payments/columns";
 import type { Student } from "@/Components/payments/columns";
 import DataTable from "@/Components/payments/data-table.vue";
 import type { Classrooms } from "./Index.vue";
-
+import AssignSchedule from "./partials/AssignSchedule.vue";
+import AddStudent from "./partials/AddStudent.vue";
+import AddTeacher from "./partials/AddTeacher.vue";
+import ScheduleTable from "./partials/ScheduleTable.vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import Button from "@/Components/ui/button/Button.vue";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/Components/ui/input";
+import AddCourse from "./partials/AddCourse.vue";
+
 import { reactive } from "vue";
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { toast } from "vue-sonner";
 
 const props = defineProps<{
@@ -685,18 +137,16 @@ export interface Course {
 }
 
 type AddCourse = Omit<Course, "id">;
-interface StudentData
-    extends Omit<Student, "id" | "qr_code_image_path" | "attendance"> {
-    classroom_id: number;
-}
 const data = ref<Student[]>(props.students);
-const form = reactive<StudentData>({
+const form = reactive({
     name: "",
     gender: "male",
     classroom_id: props.classroom.id,
     major_id: props.classroom.major.id,
+    faculty_id: props.classroom.major.faculty_id,
+    year_id: props.classroom.year_id,
+    semester_id: props.classroom.semester_id,
 });
-
 const courseData = reactive<AddCourse>({
     name: "",
     teacher_id: null,
@@ -711,6 +161,8 @@ const scheduleData = reactive({
     teacher_id: null,
     course_id: null,
     day: null,
+    time_in: "00:00",
+    time_out: "00:00",
     classroom_id: props.classroom.id,
 });
 const selectedTeacherNameEdit = computed(() => {
@@ -737,7 +189,7 @@ const createStudent = async () => {
     try {
         router.post("/student", form, {
             onSuccess: () => {
-                return Promise.all([location.reload()]);
+                toast.success("Addding student Successfully");
             },
             onError: () => {
                 console.error("Error adding student");
@@ -794,7 +246,8 @@ const createTeacher = async () => {
             },
             onError: () => {
                 const error = usePage().props.errors.name;
-                toast.error(error || "Error Adding teacher");
+                const teacherFull = usePage().props.errors.classroom_id;
+                toast.error(teacherFull || error || "Error Adding teacher");
             },
             onProgress: () => {
                 toast.loading("loading");
@@ -810,6 +263,8 @@ const populateScheduleData = (scheduleId: number) => {
         scheduleData.teacher_id = schedule.teacher_id;
         scheduleData.course_id = schedule.course_id;
         scheduleData.day = schedule.day;
+        scheduleData.time_in = schedule.time_in;
+        scheduleData.time_out = schedule.time_out;
     }
 };
 const editSchedule = async (scheduleId: number) => {
@@ -852,18 +307,18 @@ const assignSchedule = async () => {
 };
 const deleteSchedule = (scheduleId: number) => {
     router.delete(`/schedule/${scheduleId}`, {
-            onSuccess: () => {
-                toast.success("Successfully deleting schedule");
-            },
-            onError: () => {
-                const error = usePage().props.errors.scheduleExist;
-                toast.error(error || "Error deleting schedule");
-            },
-            onProgress: () => {
-                toast.loading("loading");
-            },
-        });
-}
+        onSuccess: () => {
+            toast.success("Successfully deleting schedule");
+        },
+        onError: () => {
+            const error = usePage().props.errors.scheduleExist;
+            toast.error(error || "Error deleting schedule");
+        },
+        onProgress: () => {
+            toast.loading("loading");
+        },
+    });
+};
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 const isScheduleFull = computed(() => {

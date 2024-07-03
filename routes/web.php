@@ -18,6 +18,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
 use App\Models\Classroom;
 use App\Models\Major;
+use App\Models\Student;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -47,7 +48,23 @@ Route::post('/classroom/{classroom}/attendance', [ClassroomController::class, 'm
 
 Route::resource('/student', StudentController::class)->middleware('auth');
 Route::get('/student/{student}/edit/{classroom}', [StudentController::class, 'edited'])->name('student.edit')->middleware('auth');
+Route::delete('classrooms/{classroom}/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+Route::delete('/students', [StudentController::class, 'bulkDestroy'])->name('students.bulkDestroy');
 
+Route::middleware('auth')->group(function () {
+    Route::resource('/student', StudentController::class);
+    Route::get('/student/{student}/edit/{classroom}', [StudentController::class, 'edited'])->name('student.edited');
+    Route::put('/students/{student}/', [StudentController::class,'updateGlobally'])->name('students.updateGlobally');
+    Route::delete('classrooms/{classroom}/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+    Route::delete('/students', [StudentController::class, 'bulkDestroy'])->name('students.bulkDestroy');
+
+    Route::delete('/students/{student}', [StudentController::class,'destroyGlobally'])->name('students.destroyGlobally');
+
+    Route::get('/classroom/{classroom}/importStudent', [StudentController::class,'importStudent'])->name('students.importStudent');
+    Route::post('/students/bulkInsert', [StudentController::class,'handleBulkInsert'])->name('students.bulkInsert');
+
+
+});
 
 Route::middleware('auth')->group(function () {
     Route::post('/course', [CourseController::class, 'store']);
@@ -76,9 +93,15 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/teacher', [TeacherController::class,'index'])->name('teacher.index');
+
+    Route::get('/teacher/{teacher}', [TeacherController::class,'edit'])->name('teacher.edit');
     Route::post('/teacher', [TeacherController::class,'store'])->name('teacher.store');
+    Route::post('/teachers', [TeacherController::class,'storeGlobally'])->name('teacher.storeGlobally');
     Route::get('/classroom/{classroomId}/teacher', [TeacherController::class,'show'])->name('classroom.teachers');
     Route::delete('/teacher/{teacher}', [TeacherController::class,'destroy'])->name('teacher.destroy');
+    Route::delete('/teachers/{teacher}', [TeacherController::class,'bulkDestroy'])->name('teacher.bulkDestroy');
+
     Route::patch('/teacher/{teacher}', [TeacherController::class,'update'])->name('teacher.update');
 });
 

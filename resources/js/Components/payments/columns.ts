@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { router } from "@inertiajs/vue3";
 import type { Major } from "../major/columns";
+import { toast } from "vue-sonner";
 
 interface Attendance {
     id: number;
@@ -26,8 +27,12 @@ export interface Student {
         name: string;
     };
     major_id: number;
+    faculty_id: number;
     major: Major;
     classroom_id: number;
+    year_id: number;
+    semester_id: number;
+    classrooms_count: number | null;
 }
 
 export const columns: ColumnDef<Student>[] = [
@@ -93,6 +98,60 @@ export const columns: ColumnDef<Student>[] = [
             }),
     },
     {
+        accessorKey: "major",
+        header: "Major",
+        cell: ({ row }) => {
+            const major = row.original.major;
+            if (major) {
+                console.log(major.name);
+                return major.name; // Display the major name
+            } else {
+                console.log("No major assigned");
+                return "No major assigned"; // Display a default message if major is null
+            }
+        },
+    },
+    {
+        accessorKey: "faculty_id",
+        header: "Faculty",
+        cell: ({ row }) => {
+            const major = row.original.major;
+            if (major && major.faculty) {
+                const facultyName = major.faculty.name;
+                console.log("Faculty", facultyName);
+                return facultyName; // Return the faculty name directly
+            } else {
+                console.log("No Faculty Assigned");
+                return "No Faculty Assigned"; // Display a default message if faculty or major is null
+            }
+        },
+    },
+    {
+        accessorKey: "year_id",
+        header: "Year",
+        cell: ({ row }) => {
+            const year = row.original.year_id;
+            if (year !== null && year !== undefined) {
+                return "Year " + year;
+            } else {
+                return "No year setted yet";
+            }
+        },
+    },
+    {
+        accessorKey: "semester_id",
+        header: "Semester",
+        cell: ({ row }) => {
+            const semester = row.original.semester_id;
+            if (semester !== null && semester !== undefined) {
+                return "Semester " + semester;
+            } else {
+                return "No semester setted yet";
+            }
+        },
+    },
+
+    {
         accessorKey: "attendances",
         header: "Attendance",
         cell: ({ row }) => {
@@ -145,28 +204,6 @@ export const columns: ColumnDef<Student>[] = [
             }
         },
     },
-    //},
-    //{
-    //    accessorKey: "courses",
-    //    header: "Courses",
-    //    cell: ({ row }) => {
-    //        const courses = row.original.attendances.map(att => att.course.name);
-    //        if (Array.isArray(courses) && courses.length > 0) {
-    //            return h(
-    //                "div",
-    //                courses.map((course, index) => {
-    //                    return h(
-    //                        "div",
-    //                        { key: index },
-    //                        [course],
-    //                    );
-    //                }),
-    //            );
-    //        } else {
-    //            return h("div", "No courses");
-    //        }
-    //    },
-    //},
     {
         id: "actions",
         header: "Actions",
@@ -176,7 +213,11 @@ export const columns: ColumnDef<Student>[] = [
                     Button,
                     {
                         variant: "destructive",
-                        onClick: () => handleDelete(row.original.id),
+                        onClick: () =>
+                            handleDelete(
+                                row.original.pivot.student_id,
+                                row.original.pivot.classroom_id,
+                            ),
                     },
                     "Delete",
                 ),
@@ -186,7 +227,7 @@ export const columns: ColumnDef<Student>[] = [
                         variant: "default",
                         onClick: () =>
                             handleEdit(
-                                row.original.id,
+                                row.original.pivot.student_id,
                                 row.original.pivot.classroom_id,
                             ),
                     },
@@ -196,9 +237,11 @@ export const columns: ColumnDef<Student>[] = [
     },
 ];
 
-function handleDelete(id: string) {
-    console.log(`Delete student with ID: ${id}`);
-    router.delete(`/student/${id}`, {
+function handleDelete(studentId: string, classroomId: number) {
+    console.log(
+        `Delete student with ID: ${studentId} from classroom ID: ${classroomId}`,
+    );
+    router.delete(`/classrooms/${classroomId}/students/${studentId}`, {
         onSuccess: () => {
             return Promise.all([location.reload()]);
         },
@@ -208,7 +251,31 @@ function handleDelete(id: string) {
     });
 }
 
-function handleEdit(studentId: string, classroomId: number) {
-    console.log("Classroom ID:", classroomId); // Check the type and value of classroomId
-    router.visit(`/student/${studentId}/edit/${classroomId}`); // Use classroomId instead of classroom
+export function handleBulkDelete(selectedIds: number[]) {
+    console.log(`Delete majors with IDs: ${selectedIds}`);
+
+    const reloadAfterDelay = () => {
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    };
+
+    router.delete(`/students`, {
+        data: { ids: selectedIds },
+        onSuccess: () => {
+            toast.success("Students Deleted", {
+                description: "Selected students have been deleted successfully",
+            });
+            // Call the reload function after success
+            reloadAfterDelay();
+        },
+        onError: () => {
+            toast.error("Error deleting Students");
+        },
+    });
+}
+
+function handleEdit(student_id: string, classroom_id: number) {
+    console.log("Classroom ID:", classroom_id, student_id); // Check the type and value of classroomId
+    router.visit(`/student/${student_id}/edit/${classroom_id}`); // Use classroomId instead of classroom
 }

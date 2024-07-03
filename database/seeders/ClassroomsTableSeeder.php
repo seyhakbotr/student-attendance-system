@@ -11,19 +11,17 @@ class ClassroomsTableSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run()
     {
-        // Ensure faculties exist before seeding classrooms
-        if (Faculty::count() === 0) {
-            $this->call(FacultiesTableSeeder::class);
-        }
+        $classrooms = [
+            ['major_id' => 1, 'faculty_id' => 1, 'room_number' => 101],
+            ['major_id' => 2, 'faculty_id' => 1, 'room_number' => 102],
+            ['major_id' => 1, 'faculty_id' => 2, 'room_number' => 201],
+            // Add more classrooms as needed
+        ];
 
-        // Manually assign unique room numbers
-        $roomNumbers = range(1, 10); // Adjust the range as needed
-
-        foreach ($roomNumbers as $roomNumber) {
-            Classroom::factory()->create(['room_number' => $roomNumber]);
+        foreach ($classrooms as $classroom) {
+            Classroom::create($classroom);
         }
     }
 }
-

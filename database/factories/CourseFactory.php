@@ -1,7 +1,5 @@
 <?php
 
-
-
 namespace Database\Factories;
 
 use App\Models\Course;
@@ -16,8 +14,9 @@ class CourseFactory extends Factory
     {
         return [
             'name' => $this->faker->randomElement(['Math', 'English', 'Science', 'Khmer', 'Japanese']),
-            'classroom_id' => Classroom::factory(),
+            'classroom_id' => function () {
+                return Classroom::factory()->create()->id;
+            },
         ];
     }
 }
-

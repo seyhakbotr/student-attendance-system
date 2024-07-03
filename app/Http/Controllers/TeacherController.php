@@ -57,14 +57,62 @@ class TeacherController extends Controller
 
         return redirect()->back()->with('success', 'Teacher deleted successfully!');
     }
-    public function update(Request $request, Teacher $teacher)
+    public function update(Request $request, Teacher $teacher): RedirectResponse
     {
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'classroom_id' => 'nullable|exists:classrooms,id',
         ]);
         $teacher->update($validatedData);
 
         return redirect()->back()->with('success', 'Teacher updated successfully!');
     }
+    public function index(): Response
+    {
+        $teachers = Teacher::withCount('classroom')->get();
+        $classrooms = Classroom::all();
+        return Inertia::render(
+            'Teacher/Index',
+            [
+                    'teachers' => $teachers,
+                    'breadcrumbs' => [
+                        ['label' => 'Home', 'url' => route('dashboard')],
+                        ['label' => 'Teachers', 'url' => route('teacher.index')],
+                ],
+                'classrooms' => $classrooms
+                ]
+        );
+    }
+    public function storeGlobally(Request $request): RedirectResponse
+    {
+        $validatedData = $request->validate([
+                  'name' => 'required|string|max:255|unique:teachers,name',
+                  'classroom_id' => 'nullable|exists:classrooms,id',
+        ]);
+        $teacher = Teacher::create($validatedData);
+        return redirect()->back()->with('success', 'Teacher has been successfully stored');
+
+    }
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->input('ids');
+        Teacher::whereIn('id', $ids)->delete();
+        return redirect()->back()->with('success', 'Selected Teachers deleted Successfully!');
+    }
+    public function edit($id): Response
+    {
+        $teacher = Teacher::with('classroom')->findOrFail($id);
+        $classrooms = Classroom::all();
+        return Inertia::render('Teacher/Edit', [
+            'teacher' => $teacher,
+            'classrooms' => $classrooms,
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('dashboard')],
+                ['label' => 'Teacher', 'url' => route('teacher.index')],
+                ['label' => 'Edit Teacher ' . $teacher->name, 'url' => route('teacher.edit', $teacher->id)],
+            ],
+        ]);
+    }
+
 }

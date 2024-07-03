@@ -42,7 +42,7 @@ function onDetect(detectedCodes) {
         })
         .filter((code) => code !== null);
 
-    if (parsedCodes.length > 0 && selectedCourse.value) {
+    if (parsedCodes.length > 0 ) {
         result.value = parsedCodes[0];
         // Trigger a toast notification
         toast(`QR Code Detected`, {

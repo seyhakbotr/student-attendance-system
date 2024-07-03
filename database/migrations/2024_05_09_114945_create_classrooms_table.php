@@ -14,6 +14,8 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('major_id')->constrained()->onDelete('cascade'); // Foreign key to majors table
             $table->foreignId('faculty_id')->constrained()->onDelete('cascade');
+            $table->foreignId('year_id')->constrained()->onDelete('cascade');
+            $table->foreignId('semester_id')->constrained()->onDelete('cascade');
             $table->integer('room_number')->unique();
             $table->timestamps();
         });
