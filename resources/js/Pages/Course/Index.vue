@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import type { Major } from "@/Components/major/columns";
-import DataTable from "@/Components/major/DataTable.vue";
 import { onMounted } from "vue";
-import { columns } from "@/Components/major/columns";
+import { columns } from "@/Components/courses/columns";
 import { ref } from "vue";
+import DataTable from "@/Components/courses/DataTable.vue";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -21,110 +20,97 @@ import { reactive } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { toast } from "vue-sonner";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Faculty } from "@/Components/faculty/columns";
+import type { Course } from "@/Components/courses/columns";
 import ComboBox from "@/Components/ComboBox.vue";
+import { Major } from "@/Components/major/columns";
 const props = defineProps<{
+    courses: Course[];
     majors: Major[];
-    faculties: Faculty[];
     breadcrumbs: BreadcrumbType[];
 }>();
 
-interface AddMajor {
-    name: string | null;
-    faculty_id: number | null;
-}
-
-const data = ref<Major[]>([]);
-const majorForm = reactive<AddMajor>({
+const courseForm = reactive({
     name: "",
-    faculty_id: 0,
+    major_id: 0,
 });
-function handleFacultySelect(id: number) {
-    majorForm.faculty_id = id;
-}
-const createMajor = () => {
-    router.post("/major", majorForm, {
+console.log("course", props.courses);
+const data = ref<Course[]>([]);
+const createcourse = () => {
+    router.post("/courses", courseForm, {
         onSuccess: () => {
-            toast.success("Major added", {
-                description: "The Major has been added succesfully",
+            toast.success("course added", {
+                description: "The course has been added succesfully",
             });
-            fetchMajors();
+            fetchcourses();
         },
         onError: () => {
             const error = usePage().props.errors.name;
-            toast.error("Error adding Major", {
+            toast.error("Error adding course", {
                 description:
-                    error || "The Major has not been added succesfully",
+                    error || "The course has not been added succesfully",
             });
         },
     });
 };
 
-const fetchMajors = async () => {
+const fetchcourses = async () => {
     try {
-        const response = await router.get("/major");
+        const response = await router.get("/course");
         data.value = response.data;
     } catch (error) {
-        console.error("Error fetching major:", error);
+        console.error("Error fetching courses:", error);
     }
 };
+function handleMajorSelect(id: number) {
+    courseForm.major_id = id;
+}
 onMounted(() => {
-    data.value = props.majors;
+    data.value = props.courses;
 });
 </script>
+
 <template>
     <AuthenticatedLayout :breadcrumbs="breadcrumbs">
-        <h1 class="text-6xl font-extrabold text-primary-accent">Major List</h1>
+        <h1 class="text-6xl font-extrabold text-primary-accent">course List</h1>
         <Dialog>
             <div>
                 <DialogTrigger as-child>
                     <Button variant="secondary" class="sm:p-2 sm:text-sm">
-                        Add Major
+                        Add course
                     </Button>
                 </DialogTrigger>
             </div>
             <!-- Rest of the dialog content remains unchanged -->
             <DialogContent class="sm:max-w-[425px]">
-                <form @submit.prevent="createMajor">
+                <form @submit.prevent="createcourse">
                     <DialogHeader>
-                        <DialogTitle>Add Major</DialogTitle>
+                        <DialogTitle>Add course</DialogTitle>
                         <DialogDescription>
-                            Create a new Major. Click save when you're done
+                            Create a new course. Click save when you're done
                         </DialogDescription>
                     </DialogHeader>
                     <div class="grid gap-4 py-4">
                         <div class="grid grid-cols-4 items-center gap-4">
                             <Label for="name" class="text-right">
-                                Major Name
+                                course Name
                             </Label>
                             <Input
                                 id="name"
                                 placeholder="John Doe..."
                                 class="col-span-3"
-                                v-model="majorForm.name"
+                                v-model="courseForm.name"
                             />
                         </div>
-                    </div>
-                    <div class="grid gap-4 py-4">
                         <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="faculty" class="text-right">
-                                Faculty
+                            <Label for="major" class="text-right">
+                                Major
                             </Label>
                             <ComboBox
-                                :items="props.faculties"
-                                label="Faculty"
+                                :items="props.majors"
+                                label="Major"
                                 class="col-span-3"
-                                v-model="majorForm.faculty_id"
-                                @update:selectedItemId="handleFacultySelect"
+                                v-model="courseForm.major_id"
+                                @update:selectedItemId="handleMajorSelect"
                             />
                         </div>
                     </div>

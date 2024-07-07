@@ -11,7 +11,7 @@ class Classroom extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['major_id', 'room_number', 'faculty_id','teacher_id','year_id','semester_id'];
+    protected $fillable = ['major_id', 'room_number', 'faculty_id','teacher_id','year_id','semester_id','shift'];
     public function courses()
     {
         return $this->hasMany(Course::class);

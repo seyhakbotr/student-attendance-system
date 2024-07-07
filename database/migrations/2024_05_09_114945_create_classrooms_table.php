@@ -17,6 +17,7 @@ return new class () extends Migration {
             $table->foreignId('year_id')->constrained()->onDelete('cascade');
             $table->foreignId('semester_id')->constrained()->onDelete('cascade');
             $table->integer('room_number')->unique();
+            $table->string('shift')->nullable();
             $table->timestamps();
         });
     }

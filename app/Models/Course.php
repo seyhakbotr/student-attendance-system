@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function PHPUnit\Framework\returnSelf;
+
 class Course extends Model
 {
     use HasFactory;
@@ -30,5 +32,9 @@ class Course extends Model
     public function teacher()
     {
         return $this->belongsTo(Teacher::class);
+    }
+    public function major()
+    {
+        return $this->belongsTo(Major::class);
     }
 }

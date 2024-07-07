@@ -8,20 +8,13 @@ import {
     DialogTrigger,
     DialogClose,
 } from "@/components/ui/dialog";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Button from "@/Components/ui/button/Button.vue";
 import Label from "@/Components/ui/label/Label.vue";
+import ComboBox from "@/Components/ComboBox.vue";
 import Input from "@/Components/ui/input/Input.vue";
+import { ref, computed } from "vue";
 interface Faculty {
     id: number;
     name: string;
@@ -30,20 +23,44 @@ interface Faculty {
 interface Major {
     id: number;
     name: string;
+    faculty_id: number;
 }
+
 interface ClassroomForm {
     faculty_id: number | null;
     major_id: number | null;
     room_number: string;
+    shift: string | null;
     year_id: number | null;
     semester_id: number | null;
 }
+
 const props = defineProps<{
     faculties: Faculty[];
     majors: Major[];
     storeClassroom: () => void;
     classroomForm: ClassroomForm;
 }>();
+
+const classroomForm = ref<ClassroomForm>(props.classroomForm);
+
+function handleFacultySelect(id: number) {
+    classroomForm.value.faculty_id = id;
+    classroomForm.value.major_id = null; // Reset major selection when faculty changes
+}
+
+function handleMajorSelect(id: number) {
+    classroomForm.value.major_id = id;
+}
+
+const filteredMajors = computed(() => {
+    if (classroomForm.value.faculty_id === null) {
+        return [];
+    }
+    return props.majors.filter(
+        (major) => major.faculty_id === classroomForm.value.faculty_id,
+    );
+});
 </script>
 
 <template>
@@ -64,50 +81,50 @@ const props = defineProps<{
                 </DialogHeader>
                 <div class="grid gap-4 py-4">
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="faculty_id" class="text-right">
-                            Faculty Name
+                        <Label for="faculty" class="text-right">
+                            Faculty
                         </Label>
-                        <Select
+                        <ComboBox
+                            :items="props.faculties"
+                            label="Faculty"
+                            class="col-span-3"
                             v-model="classroomForm.faculty_id"
-                            class="max-w-10"
-                        >
-                            <SelectTrigger class="w-max">
-                                <SelectValue placeholder="Select a faculty" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup
-                                    v-for="faculty in props.faculties"
-                                    :key="faculty.id"
-                                >
-                                    <SelectItem :value="faculty.id">{{
-                                        faculty.name
-                                    }}</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                            @update:selectedItemId="handleFacultySelect"
+                        />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="major_id" class="text-right">
-                            Major Name
-                        </Label>
-                        <Select
+                        <Label for="major" class="text-right"> Major </Label>
+                        <ComboBox
+                            :items="filteredMajors"
+                            label="Major"
+                            class="col-span-3"
                             v-model="classroomForm.major_id"
-                            class="max-w-10"
-                        >
-                            <SelectTrigger class="w-max">
-                                <SelectValue placeholder="Select a major" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup
-                                    v-for="major in props.majors"
-                                    :key="major.id"
-                                >
-                                    <SelectItem :value="major.id">{{
-                                        major.name
-                                    }}</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                            @update:selectedItemId="handleMajorSelect"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-4 items-center gap-4">
+                        <Label for="Shift" class="text-right"> Shift </Label>
+                        <div class="flex items-center space-x-4">
+                            <RadioGroup
+                                class="flex flex-row"
+                                v-model="classroomForm.shift"
+                                default-value="Morning"
+                            >
+                                <div class="flex items-center space-x-4">
+                                    <RadioGroupItem id="morning" value="Morning" />
+                                    <Label for="morning">Morning</Label>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <RadioGroupItem id="afternoon" value="Afternoon" />
+                                    <Label for="afternoon">Afternoon</Label>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <RadioGroupItem id="evening" value="Evening" />
+                                    <Label for="evening">Evening</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="year" class="text-right"> Year </Label>
@@ -160,7 +177,7 @@ const props = defineProps<{
 
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="room_number" class="text-right">
-                            Room Number (Optional)
+                            Room Number
                         </Label>
                         <Input
                             id="room_number"

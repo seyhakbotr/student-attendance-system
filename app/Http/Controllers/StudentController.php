@@ -23,19 +23,20 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $request->merge([
-                   'year_id' => (int)$request->input('year_id'),
-                   'semester_id' => (int)$request->input('semester_id'),
-               ]);
+            'year_id' => (int)$request->input('year_id'),
+            'semester_id' => (int)$request->input('semester_id'),
+        ]);
 
         $validatedData = $request->validate([
-    'name' => 'required|string|max:255',
-    'gender' => 'required|in:male,female',
-    'classroom_id' => 'nullable|exists:classrooms,id',
-    'major_id' => 'required|exists:majors,id',
-    'faculty_id' => 'required|exists:faculties,id',
-    'year_id' => 'required|integer|min:1|max:4|exists:years,id',
-    'semester_id' => 'required|integer|min:1|max:2|exists:semesters,id',
-]);
+            'name' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+            'classroom_id' => 'nullable|exists:classrooms,id',
+            'major_id' => 'required|exists:majors,id',
+            'faculty_id' => 'required|exists:faculties,id',
+            'year_id' => 'required|integer|min:1|max:4|exists:years,id',
+            'semester_id' => 'required|integer|min:1|max:2|exists:semesters,id',
+        ]);
+
         try {
             // Begin a transaction
             DB::beginTransaction();
@@ -52,6 +53,9 @@ class StudentController extends Controller
                 'updated_at' => now()
             ]);
 
+            // Log for debugging
+            Log::info("Student inserted with ID: {$studentId}");
+
             // Generate QR code data and image
             $qrCodeData = json_encode(['student_id' => $studentId, 'name' => $validatedData['name']]);
             $qrCode = QrCode::format('png')->size(300)->color(255, 0, 0)->margin(10)->errorCorrection('H')->generate($qrCodeData);
@@ -59,13 +63,21 @@ class StudentController extends Controller
             $qrCodeFilePath = 'public/qrcodes/' . $qrCodeFileName;
             Storage::put($qrCodeFilePath, $qrCode);
 
+            // Log for debugging
+            Log::info("QR Code generated and stored at: {$qrCodeFilePath}");
+
             // Attach the student to the classroom
-            DB::table('classroom_student')->insert([
-                'classroom_id' => $validatedData['classroom_id'],
-                'student_id' => $studentId,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+            if (!is_null($validatedData['classroom_id'])) {
+                DB::table('classroom_student')->insert([
+                    'classroom_id' => $validatedData['classroom_id'],
+                    'student_id' => $studentId,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // Log for debugging
+                Log::info("Student attached to classroom ID: {$validatedData['classroom_id']}");
+            }
 
             // Update the student record with QR code data and image path
             DB::table('students')->where('id', $studentId)->update([
@@ -74,21 +86,29 @@ class StudentController extends Controller
                 'updated_at' => now()
             ]);
 
-            // Get the classroom and its courses
-            $classroom = Classroom::with('courses')->findOrFail($validatedData['classroom_id']);
+            // Log for debugging
+            Log::info("Student updated with QR Code data");
 
-            // If the classroom has courses, create attendance records for the student
-            if ($classroom->courses->isNotEmpty()) {
-                foreach ($classroom->courses as $course) {
-                    DB::table('attendances')->insert([
-                        'student_id' => $studentId,
-                        'course_id' => $course->id,
-                        'classroom_id' => $classroom->id,
-                        'attended' => 'absent',
-                        'date' => now(),
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
+            // Get the classroom and its courses
+            if (!is_null($validatedData['classroom_id'])) {
+                $classroom = Classroom::with('courses')->findOrFail($validatedData['classroom_id']);
+
+                // If the classroom has courses, create attendance records for the student
+                if ($classroom->courses->isNotEmpty()) {
+                    foreach ($classroom->courses as $course) {
+                        DB::table('attendances')->insert([
+                            'student_id' => $studentId,
+                            'course_id' => $course->id,
+                            'classroom_id' => $classroom->id,
+                            'attended' => 'absent',
+                            'date' => now(),
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]);
+
+                        // Log for debugging
+                        Log::info("Attendance record created for student ID: {$studentId}, course ID: {$course->id}");
+                    }
                 }
             }
 
@@ -96,17 +116,18 @@ class StudentController extends Controller
             DB::commit();
 
             // Redirect back with a success message
-            return redirect()->back()->with("success", "success!");
+            return redirect()->back()->with("success", "Student added successfully!");
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
+
             // Log the error
             Log::error("Exception occurred: {$e->getMessage()} in file {$e->getFile()} on line {$e->getLine()}");
+
             // Return an error response with a meaningful message
             return redirect()->back()->with('error', 'Failed to add student: ' . $e->getMessage());
         }
     }
-
     public function destroy(Classroom $classroom, Student $student)
     {
         try {
@@ -258,7 +279,8 @@ class StudentController extends Controller
             ->get();
         $classrooms = Classroom::all();
         $faculties = Faculty::all();
-        $majors = Major::all();
+        $majors = Major::with(['classrooms:id,major_id,room_number']) // Select only necessary fields
+                        ->get();
         return Inertia::render(
             'Student/Index',
             [
@@ -296,9 +318,9 @@ class StudentController extends Controller
         ]);
     }
 
-    public function importStudent(Classroom $classroom)
+    public function importStudent(Classroom $classroom): Response
     {
-        $students = $classroom->students()->with(['major.faculty'])->get();
+        $students = Student::query()->with('major.faculty')->get();
         $classroom->load('major');
         $classrooms = Classroom::all();
         $faculties = Faculty::all();
@@ -309,6 +331,7 @@ class StudentController extends Controller
                 'students' => $students,
                 'classrooms' => $classrooms,
                 'faculties' => $faculties,
+                'classroom' => $classroom,
                 'majors' => $majors,
                 'breadcrumbs' => [
                     ['label' => 'Home', 'url' => route('dashboard')],
@@ -318,6 +341,7 @@ class StudentController extends Controller
             ]
         );
     }
+
     public function handleBulkInsert(Request $request)
     {
         $validatedData = $request->validate([
@@ -327,17 +351,36 @@ class StudentController extends Controller
         ]);
 
         try {
-            // Begin a transaction
             DB::beginTransaction();
 
+            $classroom = Classroom::with('courses')->findOrFail($validatedData['classroom_id']);
+
             foreach ($validatedData['student_ids'] as $studentId) {
-                // Insert each student into the classroom_students table
-                DB::table('classroom_student')->insert([
-                    'classroom_id' => $validatedData['classroom_id'],
-                    'student_id' => $studentId,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+                $exists = DB::table('classroom_student')
+                            ->where('classroom_id', $validatedData['classroom_id'])
+                            ->where('student_id', $studentId)
+                            ->exists();
+
+                if (!$exists) {
+                    DB::table('classroom_student')->insert([
+                        'classroom_id' => $validatedData['classroom_id'],
+                        'student_id' => $studentId,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+
+                    foreach ($classroom->courses as $course) {
+                        DB::table('attendances')->insert([
+                            'student_id' => $studentId,
+                            'course_id' => $course->id,
+                            'classroom_id' => $classroom->id,
+                            'attended' => 'absent', // Default attendance status
+                            'date' => now(), // Current date as default attendance date
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]);
+                    }
+                }
             }
 
             // Commit the transaction
@@ -351,6 +394,5 @@ class StudentController extends Controller
             return response()->json(['error' => 'Failed to insert students into classroom: Internal server error'], 500);
         }
     }
-
 
 }

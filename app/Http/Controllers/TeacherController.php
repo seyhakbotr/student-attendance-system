@@ -14,26 +14,27 @@ class TeacherController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
+        // Validate the request data
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255|unique:teachers,name',
+            'teacher_id' => 'required|integer|exists:teachers,id',
             'classroom_id' => 'required|integer|exists:classrooms,id'
         ]);
 
         $classroomId = $validatedData['classroom_id'];
+        $teacherId = $validatedData['teacher_id'];
 
-        $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-        $teacherScheduleCount = ClassSchedule::where('classroom_id', $classroomId)
-            ->whereIn('day', $weekdays)
-            ->groupBy('day')
-            ->selectRaw('day, count(*) as count')
-            ->get();
+        $classroom = Classroom::findOrFail($classroomId);
 
-        if ($teacherScheduleCount->count() >= count($weekdays)) {
-            return redirect()->back()->withErrors(['classroom_id' => 'The schedule for this classroom is already full for the weekdays.']);
+        if ($classroom->teachers()->where('id', $teacherId)->exists()) {
+            return redirect()->back()->withErrors(['alreadyExist' => 'This teacher is already assigned to the selected classroom.']);
         }
 
-        $teacher = Teacher::create($validatedData);
-        return redirect()->back()->with('success', 'Teacher has been successfully stored');
+        $teacher = Teacher::findOrFail($teacherId);
+
+        $teacher->classroom_id = $classroomId;
+        $teacher->save();
+
+        return redirect()->back()->with('success', 'Teacher has been successfully assigned to the classroom.');
     }
     public function show($classroomId): Response
     {
@@ -94,6 +95,22 @@ class TeacherController extends Controller
         return redirect()->back()->with('success', 'Teacher has been successfully stored');
 
     }
+    public function detachFromClassroom($teacherId, $classroomId)
+    {
+        $teacher = Teacher::findOrFail($teacherId);
+
+        // Check if the teacher belongs to the classroom
+        if ($teacher->classroom_id == $classroomId) {
+            // Detach the teacher from the classroom
+            $teacher->classroom_id = null;
+            $teacher->save();
+
+            return redirect()->back()->with('success', 'Teachers detached Successfully!');
+        }
+
+        return redirect()->back()->withErrors(['message' => 'Teacher does not belong to the specified classroom.'], 404);
+    }
+
     public function bulkDestroy(Request $request): RedirectResponse
     {
         $ids = $request->input('ids');
@@ -114,5 +131,6 @@ class TeacherController extends Controller
             ],
         ]);
     }
+
 
 }

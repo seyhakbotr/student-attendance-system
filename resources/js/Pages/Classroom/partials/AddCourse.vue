@@ -1,5 +1,5 @@
 <script setup lang="ts">
-        import {
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -21,23 +21,25 @@ import {
 import Button from "@/Components/ui/button/Button.vue";
 import Label from "@/Components/ui/label/Label.vue";
 import Input from "@/Components/ui/input/Input.vue";
+import type { Course } from "@/Components/courses/columns";
+import ComboBox from "@/Components/ComboBox.vue";
 interface CourseData {
-    teacher_id: string;
-    name: string;
-}
-
-interface Teacher {
-    id: string;
+    course_id: number | null;
     name: string;
 }
 
 // Define props for the component
-defineProps<{
+const props = defineProps<{
     courseData: CourseData;
-    teachers: Teacher[];
-    selectedTeacherName: string;
+    courses: Course[];
     createCourse: () => void;
 }>();
+
+function handleCourseSelect(id: number) {
+    console.log("new id", id);
+    props.courseData.course_id = id;
+}
+console.log("All courses", props.courses);
 </script>
 <template>
     <Dialog>
@@ -57,42 +59,19 @@ defineProps<{
                     </DialogDescription>
                 </DialogHeader>
                 <div class="grid gap-4 py-4">
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="teacher" class="text-right">Teacher</Label>
-
-                        <Select v-model="courseData.teacher_id">
-                            <SelectTrigger class="w-[180px]">
-                                <SelectValue>
-                                    <span v-if="!courseData.teacher_id"
-                                        >Select a teacher</span
-                                    >
-                                    <span v-else>{{
-                                        selectedTeacherName
-                                    }}</span>
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <template
-                                        v-for="teacher in teachers"
-                                        :key="teacher.id"
-                                    >
-                                        <SelectItem :value="teacher.id">
-                                            {{ teacher.name }}
-                                        </SelectItem>
-                                    </template>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="name" class="text-right">Course Name</Label>
-                        <Input
-                            id="name"
-                            placeholder="Course Name..."
-                            class="col-span-3"
-                            v-model="courseData.name"
-                        />
+                    <div class="grid gap-4 py-4">
+                        <div class="grid grid-cols-4 items-center gap-4">
+                            <Label for="name" class="text-right"
+                                >Course Name</Label
+                            >
+                            <ComboBox
+                                :items="props.courses"
+                                label="Course"
+                                class="col-span-3"
+                                v-model="props.courseData.course_id"
+                                @update:selectedItemId="handleCourseSelect"
+                            />
+                        </div>
                     </div>
                 </div>
 

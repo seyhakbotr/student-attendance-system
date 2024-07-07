@@ -42,7 +42,7 @@ function onDetect(detectedCodes) {
         })
         .filter((code) => code !== null);
 
-    if (parsedCodes.length > 0 ) {
+    if (parsedCodes.length > 0) {
         result.value = parsedCodes[0];
         // Trigger a toast notification
         toast(`QR Code Detected`, {
@@ -216,51 +216,60 @@ const props = defineProps<{
 
 <template>
     <AuthenticatedLayout :breadcrumbs="props.breadcrumbs">
-        <div v-if="!classroomSchedule">
-            <p>This is the weekend. No classes scheduled.</p>
-        </div>
-        <div v-else>
-            <h1 class="text-4xl text-primary-accent font-extrabold">
-                Today Date: {{ classroomSchedule.day }}
-            </h1>
-            <h2>Current Teacher: {{ classroomSchedule.teacher.name }}</h2>
-        </div>
-        <Button @click="toggleQRStream" class="ml-4 w-2/6">
-            {{ qrStreamVisible ? "Hide QR Stream" : "Show QR Stream" }}
-        </Button>
-        <p class="error">{{ error }}</p>
+        <div class="flex">
+            <div class="flex-1">
+                <div v-if="!classroomSchedule">
+                    <p>This is the weekend. No classes scheduled.</p>
+                </div>
+                <div v-else>
+                    <h1 class="text-4xl text-primary-accent font-extrabold">
+                        Today Date: {{ classroomSchedule.day }}
+                    </h1>
+                    <h2>
+                        Current Teacher: {{ classroomSchedule.teacher.name }}
+                    </h2>
+                </div>
+                <Button @click="toggleQRStream" class="ml-4 w-2/6">
+                    {{ qrStreamVisible ? "Hide QR Stream" : "Show QR Stream" }}
+                </Button>
+                <p class="error">{{ error }}</p>
 
-        <p class="decode-result">
-            Last result:
-            <b>{{
-                result
-                    ? `id: ${result.student_id}, name: ${result.name}`
-                    : "No result"
-            }}</b>
-        </p>
+                <p class="decode-result">
+                    Last result:
+                    <b>{{
+                        result
+                            ? `id: ${result.student_id}, name: ${result.name}`
+                            : "No result"
+                    }}</b>
+                </p>
+            </div>
 
-        <div v-if="qrStreamVisible" class="">
-            <qrcode-stream
-                :constraints="{ deviceId: selectedDevice.deviceId }"
-                :track="trackFunctionSelected.value"
-                :formats="selectedBarcodeFormats"
-                @error="onError"
-                @detect="onDetect"
-                v-if="selectedDevice !== null"
-            />
-            <p v-else class="error">No cameras on this device</p>
+            <div
+                v-if="qrStreamVisible"
+                class="flex-1 flex justify-center items-center"
+            >
+                <qrcode-stream
+                    :constraints="{ deviceId: selectedDevice.deviceId }"
+                    :track="trackFunctionSelected.value"
+                    :formats="selectedBarcodeFormats"
+                    @error="onError"
+                    @detect="onDetect"
+                    v-if="selectedDevice !== null"
+                    class="border-2 border-gray-300 rounded-lg p-4"
+                />
+                <p v-else class="error">No cameras on this device</p>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>
-
 <style scoped>
 .error {
-    font-weight: bold;
-    color: red;
+  font-weight: bold;
+  color: red;
 }
-
 .barcode-format-checkbox {
-    margin-right: 10px;
-    white-space: nowrap;
+  margin-right: 10px;
+  white-space: nowrap;
+  display: inline-block;
 }
 </style>

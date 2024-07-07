@@ -152,9 +152,9 @@ export const columns: ColumnDef<Student>[] = [
 ];
 
 function handleDelete(studentId: number) {
-    router.delete(`/students/${studentId}`, {
+    router.delete(`/student/${studentId}`, {
         onSuccess: () => {
-            return Promise.all([location.reload()]);
+            toast.success("Student Delete");
         },
         onError: () => {
             console.log("Error");

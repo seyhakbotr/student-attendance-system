@@ -5,62 +5,106 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\Classroom;
 use App\Models\Course;
+use App\Models\Major;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class CourseController extends Controller
 {
-   public function store(Request $request)
-{
-    $validatedData = $request->validate([
-        'name' => 'required|string|max:255|unique:courses',
-        'teacher_id' => 'required|integer|exists:teachers,id',
-        'classroom_id' => 'required|integer|exists:classrooms,id',
-    ]);
+    public function index()
+    {
+        $courses = Course::withCount('classroom')->with('major')->get();
+        $majors = Major::all();
+        return Inertia::render(
+            'Course/Index',
+            [
+                'courses' => $courses,
+                'majors' => $majors,
+                    'breadcrumbs' => [
+                        ['label' => 'Home', 'url' => route('dashboard')],
+                        ['label' => 'Courses', 'url' => route('course.index')],
+                ],
+            ]
+        );
+    }
+    public function storeGlobally(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255|unique:courses',
 
-    try {
-        // Check the number of courses in the specified classroom
-        $courseCount = Course::where('classroom_id', $validatedData['classroom_id'])->count();
+            'major_id' => 'required|exists:majors,id',
+            'classroom_id' => 'nullable|exists:classrooms,id',
+        ]);
 
-        // If the course count is 5 or more, return an error
-        if ($courseCount >= 5) {
-            return redirect()->back()->withErrors(['courseLimit' => 'Cannot add more than 5 courses to this classroom.']);
-        }
-
-        // Begin a transaction
-        DB::beginTransaction();
-
-        // Create the new course
         $course = Course::create($validatedData);
-
-        // Insert attendance records using raw SQL
-        $classroomId = $validatedData['classroom_id'];
-        $courseId = $course->id;
-        DB::insert("
-            INSERT INTO attendances (student_id, course_id, classroom_id, attended, date, created_at, updated_at)
-            SELECT cs.student_id, ?, ?, 'absent', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-            FROM classroom_student cs
-            WHERE cs.classroom_id = ?
-        ", [$courseId, $classroomId, $classroomId]);
-
-        // Commit the transaction
-        DB::commit();
-
-        return redirect()->back()->with('success', 'Course and attendance records created successfully!');
-    } catch (\Exception $e) {
-        // Rollback the transaction on error
-        DB::rollBack();
-
-        // Log the error
-        Log::error("Exception occurred: {$e->getMessage()} in file {$e->getFile()} on line {$e->getLine()}");
-
-        // Return an error response
-        return redirect()->back()->withErrors(['error' => 'Failed to add course: ' . $e->getMessage()]);
+        return redirect()->back()->with('success', 'Course has been successfully stored');
     }
+
+    public function edit($id): Response
+    {
+        $course = Course::findOrFail($id);
+        $majors = Major::all();
+        return Inertia::render('Course/Edit', [
+            'course' => $course,
+            'majors' => $majors,
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('dashboard')],
+                ['label' => 'Course', 'url' => route('course.index')],
+                ['label' => 'Edit Course of ' . $course->name, 'url' => route('course.edit', $course->id)],
+            ],
+        ]);
     }
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'classroom_id' => 'required|integer|exists:classrooms,id',
+        ]);
+
+        try {
+            $courseCount = Course::where('classroom_id', $validatedData['classroom_id'])->count();
+
+            if ($courseCount >= 5) {
+                return redirect()->back()->withErrors(['courseLimit' => 'Cannot add more than 5 courses to this classroom.']);
+            }
+
+            DB::beginTransaction();
+
+            $course = Course::find($validatedData['course_id']);
+            $course->classroom_id = $validatedData['classroom_id'];
+            $course->save();
+
+            $classroomId = $validatedData['classroom_id'];
+            $courseId = $validatedData['course_id']; // Changed from $course->id
+            DB::insert("
+        INSERT INTO attendances (student_id, course_id, classroom_id, attended, date, created_at, updated_at)
+        SELECT cs.student_id, ?, ?, 'absent', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        FROM classroom_student cs
+        WHERE cs.classroom_id = ?
+    ", [$courseId, $classroomId, $classroomId]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Course assigned and attendance records created successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error("Exception occurred: {$e->getMessage()} in file {$e->getFile()} on line {$e->getLine()}");
+
+            return redirect()->back()->withErrors(['error' => 'Failed to assign course: ' . $e->getMessage()]);
+        }
+    }
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->input('ids');
+        Course::whereIn('id', $ids)->delete();
+        return redirect()->back()->with('success', 'Selected Courses Deleted Successfully!');
+    }
+
     public function getCoursesByClassroom($classroomId)
     {
         try {
@@ -77,6 +121,7 @@ class CourseController extends Controller
                     return [
                         'id' => $course->id,
                         'name' => $course->name,
+                        'major_name' => $course->classroom->major->name,
                     ];
                 }),
                 'breadcrumbs' => [
@@ -97,16 +142,32 @@ class CourseController extends Controller
             return redirect()->back()->withErrors(['error' => 'Failed to retrieve courses: ' . $e->getMessage()]);
         }
     }
-    public function destroy(Course $course)
+
+    public function detachFromClassroom($courseId, $classroomId)
+    {
+        $course = Course::findOrFail($courseId);
+
+        if ($course->classroom_id == $classroomId) {
+            $course->classroom_id = null;
+            $course->save();
+
+            return redirect()->back()->with('success', 'Course detached Successfully!');
+        }
+
+        return redirect()->back()->withErrors(['message' => 'Course does not belong to the specified classroom.'], 404);
+    }    public function destroy(Course $course)
     {
         $course->delete();
 
         return redirect()->back()->with('success', 'Course deleted successfully!');
     }
+
     public function update(Request $request, Course $course)
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+
+            'major_id' => 'required|exists:majors,id',
         ]);
 
         $course->update($validatedData);

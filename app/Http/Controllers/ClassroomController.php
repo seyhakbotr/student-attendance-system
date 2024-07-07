@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\ClassSchedule;
 use App\Models\Classroom;
+use App\Models\Course;
 use App\Models\Faculty;
 use App\Models\Major;
+use App\Models\Teacher;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -51,23 +53,35 @@ class ClassroomController extends Controller
      */
     public function show(Classroom $classroom)
     {
-        // Eager load the relationships
-        $classroom->load(['students.major.faculty', 'students.attendances.course', 'courses', 'major.faculty']);
+        // Eager load the students with their major, faculty, and filtered attendances
+        $classroom->load(['students' => function ($query) use ($classroom) {
+            $query->with(['major.faculty', 'attendances' => function ($query) use ($classroom) {
+                $query->where('classroom_id', $classroom->id)->with('course');
+            }]);
+        }, 'courses', 'major.faculty']);
+        $allCourses = Course::whereHas('major', function ($query) use ($classroom) {
+            $query->where('id', $classroom->major_id);
+        })->get();
 
         // Fetch class schedules for all weekdays
         $schedules = ClassSchedule::with(['course', 'classroom.major.faculty', 'teacher'])
             ->whereIn('day', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
             ->where('classroom_id', $classroom->id)
             ->get();
+
+        $allTeachers = Teacher::all();
         $currentDateTime = Carbon::now()->englishDayOfWeek;
+
         // Return the view with the necessary data
         return Inertia::render('Classroom/Show', [
             'classroom' => $classroom,
             'students' => $classroom->students,
-                           'courses' => $classroom->courses,
+            'courses' => $classroom->courses,
             'schedules' => $schedules,
             'teachers' => $classroom->teachers,
-            "currentDay" => $currentDateTime,
+            'allCourses' => $allCourses,
+            'allTeachers' => $allTeachers,
+            'currentDay' => $currentDateTime,
             'breadcrumbs' => [
                 ['label' => 'Home', 'url' => route('dashboard')],
                 ['label' => 'Classrooms', 'url' => route('classroom.index')],
@@ -101,6 +115,7 @@ class ClassroomController extends Controller
                 'create' => 'The selected major does not belong to the selected faculty.'
             ])->withInput();
         }
+        $validatedData['shift'] = $request->input('shift');
 
         Classroom::create($validatedData);
         return redirect()->back()->with('success', 'Classroom created successfully.');
@@ -193,9 +208,11 @@ class ClassroomController extends Controller
         return $request->validate([
             'room_number' => 'required|unique:classrooms,room_number,' . $id,
             'major_id' => 'required|exists:majors,id',
+            'shift' => 'required',
             'faculty_id' => 'required|exists:faculties,id',
             'year_id' => 'required|integer|min:1|max:4|exists:years,id',
             'semester_id' => 'required|integer|min:1|max:2|exists:semesters,id'
         ]);
+
     }
 }

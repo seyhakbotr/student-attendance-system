@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\ProfileController;
@@ -33,11 +34,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 Route::resource('/classroom', ClassroomController::class)->middleware('auth');
 Route::get('/classroom/{classroom}/attendance', [ClassroomController::class, 'showAttendancePage'])
     ->name('classroom.attendance')
@@ -67,10 +66,18 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::post('/courses', [CourseController::class, 'storeGlobally'])->name('course.storeGlobally');
+    Route::get('/course', [CourseController::class, 'index'])->name('course.index');
     Route::post('/course', [CourseController::class, 'store']);
     Route::get('/classroom/{classroomId}/course', [CourseController::class, 'getCoursesByClassroom'])->name('classroom.courses');
     Route::delete('/course/{course}', [CourseController::class, 'destroy']);
     Route::patch('/course/{course}', [CourseController::class, 'update'])->name('course.update');
+
+    Route::get('/course/{course}', [CourseController::class,'edit'])->name('course.edit');
+
+    Route::delete('/courses/{course}', [CourseController::class,'bulkDestroy'])->name('course.bulkDestroy');
+
+    Route::delete('/course/{course}/classroom/{classroom}', [CourseController::class, 'detachFromClassroom'])->name('course.detachFromClassroom');
 });
 
 Route::middleware('auth')->group(function () {
@@ -102,6 +109,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teacher/{teacher}', [TeacherController::class,'destroy'])->name('teacher.destroy');
     Route::delete('/teachers/{teacher}', [TeacherController::class,'bulkDestroy'])->name('teacher.bulkDestroy');
 
+    Route::delete('/teacher/{teacher}/classroom/{classroom}', [TeacherController::class, 'detachFromClassroom'])->name('teacher.detachFromClassroom');
     Route::patch('/teacher/{teacher}', [TeacherController::class,'update'])->name('teacher.update');
 });
 

@@ -21,18 +21,16 @@
                     <!-- Add Student !-->
                     <AddStudent
                         :form="form"
-                        :can-add-student="canAddStudent"
                         :create-student="createStudent"
                     />
                     <AddTeacher
                         :teacher-data="teacherData"
                         :create-teacher="createTeacher"
-                        :can-add-teacher="canAddStudent"
+                        :teachers="props.allTeachers"
                     />
                     <AddCourse
                         :course-data="courseData"
-                        :teachers="teachers"
-                        :selected-teacher-name="selectedTeacherName"
+                        :courses="props.allCourses"
                         :create-course="createCourse"
                     />
 
@@ -119,14 +117,16 @@ import AddCourse from "./partials/AddCourse.vue";
 import { reactive } from "vue";
 
 import { toast } from "vue-sonner";
-
+import type { Teacher } from "@/Components/teachers/columns";
 const props = defineProps<{
     classroom: Classrooms;
     students: Student[];
     courses: Course[];
+    allCourses: Course[];
     breadcrumbs: BreadcrumbType[];
     currentDay: String;
     teachers: Array[];
+    allTeachers: Teacher[];
     schedules: Array[];
 }>();
 export interface Course {
@@ -136,7 +136,6 @@ export interface Course {
     teacher_id: number | null;
 }
 
-type AddCourse = Omit<Course, "id">;
 const data = ref<Student[]>(props.students);
 const form = reactive({
     name: "",
@@ -147,14 +146,13 @@ const form = reactive({
     year_id: props.classroom.year_id,
     semester_id: props.classroom.semester_id,
 });
-const courseData = reactive<AddCourse>({
-    name: "",
-    teacher_id: null,
+const courseData = reactive({
+    course_id: null,
     classroom_id: props.classroom.id,
 });
 
 const teacherData = reactive({
-    name: "",
+    teacher_id: 0,
     classroom_id: props.classroom.id,
 });
 const scheduleData = reactive({
@@ -184,12 +182,22 @@ const selectedCourseName = computed(() => {
     );
     return selectedCourse ? selectedCourse.name : "";
 });
+
+const fetchStudents= async () => {
+    try {
+        const response = await router.get("/student");
+        data.value = response.data;
+    } catch (error) {
+        console.error("Error fetching faculties:", error);
+    }
+};
 console.log("selectedTeacher", selectedTeacherName);
 const createStudent = async () => {
     try {
         router.post("/student", form, {
             onSuccess: () => {
                 toast.success("Addding student Successfully");
+                fetchStudents();
             },
             onError: () => {
                 console.error("Error adding student");
@@ -246,8 +254,9 @@ const createTeacher = async () => {
             },
             onError: () => {
                 const error = usePage().props.errors.name;
+                const alreadyExist = usePage().props.errors.alreadyExist;
                 const teacherFull = usePage().props.errors.classroom_id;
-                toast.error(teacherFull || error || "Error Adding teacher");
+                toast.error( alreadyExist ||teacherFull || error || "Error Adding teacher");
             },
             onProgress: () => {
                 toast.loading("loading");
@@ -331,7 +340,6 @@ const isVisible = ref(false);
 const toggleVisibility = () => {
     isVisible.value = !isVisible.value;
 };
-const canAddStudent = computed(() => props.courses.length <= 4);
 onMounted(() => {
     data.value = props.students;
 });

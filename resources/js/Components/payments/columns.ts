@@ -243,7 +243,7 @@ function handleDelete(studentId: string, classroomId: number) {
     );
     router.delete(`/classrooms/${classroomId}/students/${studentId}`, {
         onSuccess: () => {
-            return Promise.all([location.reload()]);
+            return toast.success("Deleted successfully");
         },
         onError: () => {
             console.log("Error");

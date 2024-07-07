@@ -49,7 +49,7 @@ const createTeacher = () => {
             toast.success("Teacher added", {
                 description: "The teacher has been added succesfully",
             });
-            fetchFaculties();
+            fetchTeachers();
         },
         onError: () => {
             const error = usePage().props.errors.name;
@@ -61,12 +61,12 @@ const createTeacher = () => {
     });
 };
 
-const fetchFaculties = async () => {
+const fetchTeachers = async () => {
     try {
         const response = await router.get("/teacher");
         data.value = response.data;
     } catch (error) {
-        console.error("Error fetching faculties:", error);
+        console.error("Error fetching teacher:", error);
     }
 };
 onMounted(() => {

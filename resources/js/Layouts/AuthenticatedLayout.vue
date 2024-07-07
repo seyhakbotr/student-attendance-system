@@ -30,7 +30,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 import { Input } from "@/Components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
-import { Head } from '@inertiajs/vue3'
+import { Head } from "@inertiajs/vue3";
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 
@@ -39,7 +39,7 @@ const props = defineProps({
         type: Array as () => BreadcrumbType[],
         default: () => [],
     },
-    title: String
+    title: String,
 });
 </script>
 
@@ -100,13 +100,18 @@ const props = defineProps({
                         >
                             Student
                         </NavLink>
-   <NavLink
+                        <NavLink
                             :href="route('teacher.index')"
                             :active="route().current('teacher.index')"
                         >
                             Teacher
                         </NavLink>
-
+                        <NavLink
+                            :href="route('course.index')"
+                            :active="route().current('course.index')"
+                        >
+                            Course
+                        </NavLink>
                     </nav>
                 </div>
             </div>

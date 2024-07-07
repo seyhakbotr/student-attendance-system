@@ -68,12 +68,21 @@ const updateStudent = (id: number) => {
 
 function handleFacultySelect(id: number) {
     StudentName.faculty_id = id;
+    StudentName.major_id = null
 }
 function handleMajorSelect(id: number) {
     StudentName.major_id = id;
     console.log("major id", StudentName.major_id);
 }
 
+const filteredMajors = computed(() => {
+    if (StudentName.faculty_id === null) {
+        return [];
+    }
+    return props.majors.filter(
+        (major) => major.faculty_id === StudentName.faculty_id,
+    );
+});
 const yearOptions = [
     { id: 1, label: "Year 1" },
     { id: 2, label: "Year 2" },
@@ -121,7 +130,7 @@ const semesterOptions = [
                     <div class="flex flex-col space-y-1.5">
                         <label for="major" class="font-medium">Major</label>
                         <ComboBox
-                            :items="props.majors"
+                            :items="filteredMajors"
                             label="Major"
                             class="col-span-3"
                             :selectedId="StudentName.major_id"
@@ -204,34 +213,6 @@ const semesterOptions = [
                                 </div>
                             </RadioGroup>
                         </div>
-                    </div>
-                    <div class="flex flex-col space-y-1.5">
-                        <Label for="classroomNumber" class="text-left"
-                            >Room number</Label
-                        >
-                        <Select v-model="StudentName.classroom_id">
-                            <SelectTrigger class="w-[180px]">
-                                <SelectValue
-                                    :placeholder="
-                                        'Select a room' +
-                                        (props.classrooms.length
-                                            ? ''
-                                            : ' (No classrooms available)')
-                                    "
-                                />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectLabel>Classrooms</SelectLabel>
-                                    <SelectItem
-                                        v-for="classroom in props.classrooms"
-                                        :key="classroom.id"
-                                        :value="classroom.id"
-                                        >{{ classroom.room_number }}</SelectItem
-                                    >
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-4 mt-6">

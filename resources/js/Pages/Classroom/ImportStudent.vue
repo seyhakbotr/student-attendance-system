@@ -23,7 +23,14 @@ const lastParameter = segments[segments.length - 2];
 const classroomId = parseInt(lastParameter);
 console.log("lastParameterAsNumber", classroomId);
 onMounted(() => {
-    data.value = props.students;
+    const classroomFacultyId = props.classroom.faculty_id;
+    const classroomMajorId = props.classroom.major_id;
+
+    const filteredStudents = props.students.filter(student =>
+        student.faculty_id === classroomFacultyId && student.major_id === classroomMajorId
+    );
+
+    data.value = filteredStudents;
 });
 </script>
 

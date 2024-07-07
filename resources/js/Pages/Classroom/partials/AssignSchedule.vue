@@ -160,8 +160,6 @@ const timeOut = ref("00:00");
                                 type="time"
                                 id="time"
                                 v-model="scheduleData.time_in"
-                                min="09:00"
-                                max="18:00"
                                 required
                             />
                         </div>
@@ -195,17 +193,13 @@ const timeOut = ref("00:00");
                                 type="time"
                                 id="time"
                                 v-model="scheduleData.time_out"
-                                min="09:00"
-                                max="18:00"
                                 required
                             />
                         </div>
                     </div>
                 </div>
                 <DialogFooter class="flex items-end">
-                    <DialogClose>
                         <Button type="submit">Save Schedule</Button>
-                    </DialogClose>
                 </DialogFooter>
             </form>
         </DialogContent>

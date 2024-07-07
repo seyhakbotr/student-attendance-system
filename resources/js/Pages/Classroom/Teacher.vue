@@ -41,8 +41,8 @@ const props = defineProps<{
 
 const editedTeacher = ref<Teacher | null>(null);
 
-const deleteTeacher = (id: number) => {
-    router.delete(`/teacher/${id}`, {
+const deleteTeacher = (teacherId: number) => {
+    router.delete(`/teacher/${teacherId}/classroom/${props.classroom.id}`, {
         onSuccess: () => {
             toast.success("Teacher deleted", {
                 description: "Teacher has been deleted successfully",
@@ -83,7 +83,7 @@ const saveChanges = (teacherId: number) => {
 };
 
 const editedTeacherName = computed({
-    get: () => editedTeacher.value?.name ?? '',
+    get: () => editedTeacher.value?.name ?? "",
     set: (value: string) => {
         if (editedTeacher.value) {
             editedTeacher.value.name = value;
@@ -95,8 +95,8 @@ const editedTeacherName = computed({
 <template>
     <AuthenticatedLayout :breadcrumbs="breadcrumbs">
         <div>
-            <h1>Teachers for Classroom {{classroom.major.name}}</h1>
-            <h2>Room Number: {{classroom.room_number}}</h2>
+            <h1>Teachers for Classroom {{ classroom.major.name }}</h1>
+            <h2>Room Number: {{ classroom.room_number }}</h2>
             <Table>
                 <TableCaption>List of teachers</TableCaption>
                 <TableHeader>
@@ -114,30 +114,50 @@ const editedTeacherName = computed({
                             <TableCell>
                                 <Dialog>
                                     <DialogTrigger as-child>
-                                        <Button variant="default" @click="openEditDialog(teacher)">
+                                        <Button
+                                            variant="default"
+                                            @click="openEditDialog(teacher)"
+                                        >
                                             Edit
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent class="sm:max-w-[425px]">
                                         <DialogHeader>
-                                            <DialogTitle>Edit teacher</DialogTitle>
+                                            <DialogTitle
+                                                >Edit teacher</DialogTitle
+                                            >
                                             <DialogDescription>
-                                                Make changes to the teacher here.
-                                                Click save when you're done.
+                                                Make changes to the teacher
+                                                here. Click save when you're
+                                                done.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div class="grid gap-4 py-4">
-                                            <div class="grid grid-cols-4 items-center gap-4">
-                                                <Label for="teacherName" class="text-right">
+                                            <div
+                                                class="grid grid-cols-4 items-center gap-4"
+                                            >
+                                                <Label
+                                                    for="teacherName"
+                                                    class="text-right"
+                                                >
                                                     Teacher Name
                                                 </Label>
                                                 <!-- Bind input field to teacher.name -->
-                                                <Input id="name" class="col-span-3" v-model="editedTeacherName" />
+                                                <Input
+                                                    id="name"
+                                                    class="col-span-3"
+                                                    v-model="editedTeacherName"
+                                                />
                                             </div>
                                         </div>
                                         <DialogFooter>
                                             <DialogClose>
-                                                <Button type="button" @click="saveChanges(teacher.id)">
+                                                <Button
+                                                    type="button"
+                                                    @click="
+                                                        saveChanges(teacher.id)
+                                                    "
+                                                >
                                                     Save changes
                                                 </Button>
                                             </DialogClose>
@@ -146,7 +166,11 @@ const editedTeacherName = computed({
                                 </Dialog>
                             </TableCell>
                             <TableCell>
-                                <Button variant="destructive" @click.prevent="deleteTeacher(teacher.id)">Delete</Button>
+                                <Button
+                                    variant="destructive"
+                                    @click.prevent="deleteTeacher(teacher.id)"
+                                    >Delete</Button
+                                >
                             </TableCell>
                         </div>
                     </TableRow>
@@ -158,4 +182,3 @@ const editedTeacherName = computed({
         </div>
     </AuthenticatedLayout>
 </template>
-

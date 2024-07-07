@@ -34,6 +34,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { computed } from "vue";
 const props = defineProps<{
     students: Student[];
     classrooms: Classrooms[];
@@ -79,15 +80,20 @@ onMounted(() => {
 
 function handleFacultySelect(id: number) {
     studentForm.faculty_id = id;
+    studentForm.major_id = null;
 }
 
 function handleMajorSelect(id: number) {
     studentForm.major_id = id;
 }
-function handleClassroomSelect(id: number) {
-    console.log("Selected classroom ID:", id);
-    studentForm.classroom_id = id;
-}
+const filteredMajors = computed(() => {
+    if (studentForm.faculty_id === null) {
+        return [];
+    }
+    return props.majors.filter(
+        (major) => major.faculty_id === studentForm.faculty_id,
+    );
+});
 </script>
 
 <template>
@@ -140,7 +146,7 @@ function handleClassroomSelect(id: number) {
                                 Major
                             </Label>
                             <ComboBox
-                                :items="props.majors"
+                                :items="filteredMajors"
                                 label="Major"
                                 class="col-span-3"
                                 v-model="studentForm.major_id"
@@ -231,35 +237,6 @@ function handleClassroomSelect(id: number) {
                                     </div>
                                 </RadioGroup>
                             </div>
-                        </div>
-                        <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="classroomNumber" class="text-right">
-                                Room number
-                            </Label>
-                            <Select v-model="studentForm.classroom_id">
-                                <SelectTrigger class="w-[180px]">
-                                    <SelectValue
-                                        :placeholder="
-                                            'Select a room' +
-                                            (props.classrooms.length
-                                                ? ''
-                                                : ' (No classrooms available)')
-                                        "
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Classrooms</SelectLabel>
-                                        <SelectItem
-                                            v-for="classroom in props.classrooms"
-                                            :key="classroom.id"
-                                            :value="classroom.id"
-                                        >
-                                            {{ classroom.room_number }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
                         </div>
                     </div>
                     <DialogFooter class="flex items-end">
