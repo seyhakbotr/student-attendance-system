@@ -18,13 +18,13 @@ class ScheduleController extends Controller
           'time_in' => 'required|date_format:H:i',
 'time_out' => 'required|date_format:H:i',
         ]);
-        $existingSchedule = ClassSchedule::where('teacher_id', $validatedData['teacher_id'])
-            ->where('day', $validatedData['day'])
-            ->first();
-        if ($existingSchedule) {
-            return redirect()->back()->withErrors(['scheduleExist' => 'Schedule already exists for this teacher on the given day.']);
-
-        }
+        /*$existingSchedule = ClassSchedule::where('teacher_id', $validatedData['teacher_id'])*/
+        /*    ->where('day', $validatedData['day'])*/
+        /*    ->first();*/
+        /*if ($existingSchedule) {*/
+        /*    return redirect()->back()->withErrors(['scheduleExist' => 'Schedule already exists for this teacher on the given day.']);*/
+        /**/
+        /*}*/
         $schedule = ClassSchedule::create($validatedData);
         return redirect()->back()->with("success", "Schedule added succesfully");
     }

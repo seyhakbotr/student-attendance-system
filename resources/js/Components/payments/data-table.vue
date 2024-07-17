@@ -24,6 +24,17 @@ import {
 import { valueUpdater } from "@/lib/utils";
 
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
     ArrowUpDown,
     ChevronDown,
     ChevronLeftIcon,
@@ -76,9 +87,12 @@ const tableOptions = reactive<TableOptions<Document>>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
-    onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
+    onColumnFiltersChange: (updaterOrValue) =>
+        valueUpdater(updaterOrValue, columnFilters),
+    onColumnVisibilityChange: (updaterOrValue) =>
+        valueUpdater(updaterOrValue, columnVisibility),
+    onRowSelectionChange: (updaterOrValue) =>
+        valueUpdater(updaterOrValue, rowSelection),
     state: {
         get sorting() {
             return sorting.value;
@@ -100,23 +114,52 @@ const handleDeleteButton = () => {
     const selectedRows = table.getSelectedRowModel();
     const selectedIds = selectedRows.flatRows.map((row) => row.original.id);
     console.log("selectedIds", selectedIds);
-    handleBulkDelete(selectedIds);
+    handleBulkDelete(selectedIds, props.classroomId);
 };
 </script>
 
 <template>
     <div>
         <div class="flex items-center py-4">
-            <Input class="max-w-sm" placeholder="Filter name..." :model-value="table.getColumn('name')?.getFilterValue() as string
-                " @update:model-value="
+            <Input
+                class="max-w-sm"
+                placeholder="Filter name..."
+                :model-value="
+                    table.getColumn('name')?.getFilterValue() as string
+                "
+                @update:model-value="
                     table.getColumn('name')?.setFilterValue($event)
-                    " />
+                "
+            />
             <Button variant="link">
-                <Link :href="`/classroom/${props.classroomId}/attendance`">View Attendance</Link>
+                <Link :href="`/classroom/${props.classroomId}/attendance`"
+                    >View Attendance</Link
+                >
             </Button>
 
-            <Button variant="destructive" @click="handleDeleteButton()">Bulk Delete</Button>
-
+            <AlertDialog>
+                <AlertDialogTrigger as-child>
+                    <Button variant="destructive"> Bulk Delete </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle
+                            >Are you absolutely sure?</AlertDialogTitle
+                        >
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            detach students and remove your data from our
+                            servers.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction @click="handleDeleteButton()"
+                            >Delete</AlertDialogAction
+                        >
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <Button variant="outline" class="ml-auto">
@@ -125,13 +168,19 @@ const handleDeleteButton = () => {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuCheckboxItem v-for="column in table
-                        .getAllColumns()
-                        .filter((column) => column.getCanHide())" :key="column.id" class="capitalize"
-                        :checked="column.getIsVisible()" @update:checked="(value) => {
+                    <DropdownMenuCheckboxItem
+                        v-for="column in table
+                            .getAllColumns()
+                            .filter((column) => column.getCanHide())"
+                        :key="column.id"
+                        class="capitalize"
+                        :checked="column.getIsVisible()"
+                        @update:checked="
+                            (value) => {
                                 column.toggleVisibility(!!value);
                             }
-                            ">
+                        "
+                    >
                         {{ column.id }}
                     </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
@@ -140,25 +189,48 @@ const handleDeleteButton = () => {
         <div class="border rounded-md">
             <Table>
                 <TableHeader>
-                    <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                        <TableHead v-for="header in headerGroup.headers" :key="header.id">
-                            <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
-                                :props="header.getContext()" />
+                    <TableRow
+                        v-for="headerGroup in table.getHeaderGroups()"
+                        :key="headerGroup.id"
+                    >
+                        <TableHead
+                            v-for="header in headerGroup.headers"
+                            :key="header.id"
+                        >
+                            <FlexRender
+                                v-if="!header.isPlaceholder"
+                                :render="header.column.columnDef.header"
+                                :props="header.getContext()"
+                            />
                         </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     <template v-if="table.getRowModel().rows?.length">
-                        <TableRow v-for="row in table.getRowModel().rows" :key="row.id" :data-state="row.getIsSelected() ? 'selected' : undefined
-                            ">
-                            <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                        <TableRow
+                            v-for="row in table.getRowModel().rows"
+                            :key="row.id"
+                            :data-state="
+                                row.getIsSelected() ? 'selected' : undefined
+                            "
+                        >
+                            <TableCell
+                                v-for="cell in row.getVisibleCells()"
+                                :key="cell.id"
+                            >
+                                <FlexRender
+                                    :render="cell.column.columnDef.cell"
+                                    :props="cell.getContext()"
+                                />
                             </TableCell>
                         </TableRow>
                     </template>
                     <template v-else>
                         <TableRow>
-                            <TableCell :colSpan="columns.length" class="h-24 text-center">
+                            <TableCell
+                                :colSpan="columns.length"
+                                class="h-24 text-center"
+                            >
                                 No results.
                             </TableCell>
                         </TableRow>
@@ -174,41 +246,66 @@ const handleDeleteButton = () => {
             <div class="flex items-center space-x-6 lg:space-x-8">
                 <div class="flex items-center space-x-2">
                     <p class="text-sm font-medium">Rows per page</p>
-                    <Select :model-value="`${table.getState().pagination.pageSize}`"
-                        @update:model-value="table.setPageSize">
+                    <Select
+                        :model-value="`${table.getState().pagination.pageSize}`"
+                        @update:model-value="table.setPageSize"
+                    >
                         <SelectTrigger class="h-8 w-[70px]">
-                            <SelectValue :placeholder="`${table.getState().pagination.pageSize}`" />
+                            <SelectValue
+                                :placeholder="`${table.getState().pagination.pageSize}`"
+                            />
                         </SelectTrigger>
                         <SelectContent side="top">
-                            <SelectItem v-for="pageSize in [5, 10, 20, 30, 40, 50]" :key="pageSize"
-                                :value="`${pageSize}`">
+                            <SelectItem
+                                v-for="pageSize in [5, 10, 20, 30, 40, 50]"
+                                :key="pageSize"
+                                :value="`${pageSize}`"
+                            >
                                 {{ pageSize }}
                             </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
-                <div class="flex w-[100px] items-center justify-center text-sm font-medium">
+                <div
+                    class="flex w-[100px] items-center justify-center text-sm font-medium"
+                >
                     Page {{ table.getState().pagination.pageIndex + 1 }} of
                     {{ table.getPageCount() }}
                 </div>
                 <div class="flex items-center space-x-2">
-                    <Button variant="outline" class="hidden w-8 h-8 p-0 lg:flex" :disabled="!table.getCanPreviousPage()"
-                        @click="table.setPageIndex(0)">
+                    <Button
+                        variant="outline"
+                        class="hidden w-8 h-8 p-0 lg:flex"
+                        :disabled="!table.getCanPreviousPage()"
+                        @click="table.setPageIndex(0)"
+                    >
                         <span class="sr-only">Go to first page</span>
                         <ChevronsLeft class="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" class="w-8 h-8 p-0" :disabled="!table.getCanPreviousPage()"
-                        @click="table.previousPage()">
+                    <Button
+                        variant="outline"
+                        class="w-8 h-8 p-0"
+                        :disabled="!table.getCanPreviousPage()"
+                        @click="table.previousPage()"
+                    >
                         <span class="sr-only">Go to previous page</span>
                         <ChevronLeftIcon class="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" class="w-8 h-8 p-0" :disabled="!table.getCanNextPage()"
-                        @click="table.nextPage()">
+                    <Button
+                        variant="outline"
+                        class="w-8 h-8 p-0"
+                        :disabled="!table.getCanNextPage()"
+                        @click="table.nextPage()"
+                    >
                         <span class="sr-only">Go to next page</span>
                         <ChevronRightIcon class="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" class="hidden w-8 h-8 p-0 lg:flex" :disabled="!table.getCanNextPage()"
-                        @click="table.setPageIndex(table.getPageCount() - 1)">
+                    <Button
+                        variant="outline"
+                        class="hidden w-8 h-8 p-0 lg:flex"
+                        :disabled="!table.getCanNextPage()"
+                        @click="table.setPageIndex(table.getPageCount() - 1)"
+                    >
                         <span class="sr-only">Go to last page</span>
                         <ChevronsRight class="w-4 h-4" />
                     </Button>

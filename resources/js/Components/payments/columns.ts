@@ -9,7 +9,7 @@ import { toast } from "vue-sonner";
 interface Attendance {
     id: number;
     attended: "present" | "absent";
-    date: string | null; // Optional date
+    date: string | null;
     course: {
         id: number;
         name: string;
@@ -22,9 +22,11 @@ export interface Student {
     gender: "male" | "female";
     qr_code_image_path: string;
     attendances: Attendance[];
-    course: {
-        id: number;
-        name: string;
+    courseAttendance: {
+        [courseId: number]: {
+            course_name: string;
+            total_attendance: number;
+        };
     };
     major_id: number;
     faculty_id: number;
@@ -33,6 +35,7 @@ export interface Student {
     year_id: number;
     semester_id: number;
     classrooms_count: number | null;
+    attendance_count: number | null;
 }
 
 export const columns: ColumnDef<Student>[] = [
@@ -58,7 +61,7 @@ export const columns: ColumnDef<Student>[] = [
     {
         id: "seq",
         header: "Seq",
-        cell: ({ row }) => row.index + 1, // Display sequential number
+        cell: ({ row }) => row.index + 1,
         enableSorting: false,
         enableHiding: false,
     },
@@ -104,10 +107,10 @@ export const columns: ColumnDef<Student>[] = [
             const major = row.original.major;
             if (major) {
                 console.log(major.name);
-                return major.name; // Display the major name
+                return major.name;
             } else {
                 console.log("No major assigned");
-                return "No major assigned"; // Display a default message if major is null
+                return "No major assigned";
             }
         },
     },
@@ -119,10 +122,10 @@ export const columns: ColumnDef<Student>[] = [
             if (major && major.faculty) {
                 const facultyName = major.faculty.name;
                 console.log("Faculty", facultyName);
-                return facultyName; // Return the faculty name directly
+                return facultyName;
             } else {
                 console.log("No Faculty Assigned");
-                return "No Faculty Assigned"; // Display a default message if faculty or major is null
+                return "No Faculty Assigned";
             }
         },
     },
@@ -134,7 +137,23 @@ export const columns: ColumnDef<Student>[] = [
             if (year !== null && year !== undefined) {
                 return "Year " + year;
             } else {
-                return "No year setted yet";
+                return "No year set yet";
+            }
+        },
+    },
+    {
+        accessorKey: "attendance_count",
+        header: "Attendance Count",
+        cell: ({ row }) => {
+            const courseAttendance = row.original.courseAttendance;
+            if (courseAttendance) {
+                return h("div",
+                    Object.values(courseAttendance).map(({ course_name, total_attendance }) =>
+                        h("div", { key: course_name }, `${course_name}: ${total_attendance}`)
+                    )
+                );
+            } else {
+                return "No attendance yet";
             }
         },
     },
@@ -146,11 +165,10 @@ export const columns: ColumnDef<Student>[] = [
             if (semester !== null && semester !== undefined) {
                 return "Semester " + semester;
             } else {
-                return "No semester setted yet";
+                return "No semester set yet";
             }
         },
     },
-
     {
         accessorKey: "attendances",
         header: "Attendance",
@@ -169,9 +187,18 @@ export const columns: ColumnDef<Student>[] = [
                                             ? "text-green-500"
                                             : "text-red-500",
                                 },
+                                "\u2022 ",
+                            ),
+                            h(
+                                "span",
+                                {
+                                    class:
+                                        attendance.attended === "present"
+                                            ? "text-green-500"
+                                            : "text-red-500",
+                                },
                                 attendance.attended,
                             ),
-                            // Optionally display date if available
                         ]);
                     }),
                 );
@@ -190,6 +217,7 @@ export const columns: ColumnDef<Student>[] = [
                     "div",
                     attendances.map((attendance) => {
                         return h("div", { key: attendance.id }, [
+                            h("span", "\u2022 "),
                             h(
                                 "span",
                                 attendance.course
@@ -251,7 +279,7 @@ function handleDelete(studentId: string, classroomId: number) {
     });
 }
 
-export function handleBulkDelete(selectedIds: number[]) {
+export function handleBulkDelete(selectedIds: number[], classroom_id: number) {
     console.log(`Delete majors with IDs: ${selectedIds}`);
 
     const reloadAfterDelay = () => {
@@ -260,13 +288,12 @@ export function handleBulkDelete(selectedIds: number[]) {
         }, 2000);
     };
 
-    router.delete(`/students`, {
-        data: { ids: selectedIds },
+    router.delete(`/studentsClassroom`, {
+        data: { ids: selectedIds, classroom_id: classroom_id },
         onSuccess: () => {
             toast.success("Students Deleted", {
                 description: "Selected students have been deleted successfully",
             });
-            // Call the reload function after success
             reloadAfterDelay();
         },
         onError: () => {
@@ -276,6 +303,7 @@ export function handleBulkDelete(selectedIds: number[]) {
 }
 
 function handleEdit(student_id: string, classroom_id: number) {
-    console.log("Classroom ID:", classroom_id, student_id); // Check the type and value of classroomId
-    router.visit(`/student/${student_id}/edit/${classroom_id}`); // Use classroomId instead of classroom
+    console.log("Classroom ID:", classroom_id, student_id);
+    router.visit(`/student/${student_id}/edit/${classroom_id}`);
 }
+

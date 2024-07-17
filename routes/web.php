@@ -57,6 +57,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('classrooms/{classroom}/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
     Route::delete('/students', [StudentController::class, 'bulkDestroy'])->name('students.bulkDestroy');
 
+    Route::delete('/studentsClassroom', [StudentController::class, 'handleBulkDetach'])->name('students.handleBulkDetach');
+
     Route::delete('/students/{student}', [StudentController::class,'destroyGlobally'])->name('students.destroyGlobally');
 
     Route::get('/classroom/{classroom}/importStudent', [StudentController::class,'importStudent'])->name('students.importStudent');

@@ -83,9 +83,20 @@ export const columns: ColumnDef<Student>[] = [
             }
         },
     },
+
     {
         accessorKey: "faculty_id",
-        header: "Faculty",
+        header: ({ column }) => {
+            return h(
+                Button,
+                {
+                    variant: "ghost",
+                    onClick: () =>
+                        column.toggleSorting(column.getIsSorted() === "asc"),
+                },
+                () => ["Faculty"],
+            );
+        },
         cell: ({ row }) => {
             const major = row.original.major;
             if (major && major.faculty) {
@@ -186,44 +197,48 @@ export function handleBulkDelete(selectedIds: number[]) {
     });
 }
 
-export async function handleBulkInsert(studentIds: number[], classroomId: number) {
-    console.log(`Bulk inserting students with IDs: ${studentIds} into classroom ${classroomId}`);
+export async function handleBulkInsert(
+    studentIds: number[],
+    classroomId: number,
+) {
+    console.log(
+        `Bulk inserting students with IDs: ${studentIds} into classroom ${classroomId}`,
+    );
 
     try {
-        const response = await axios.post<{ message?: string }>(`/students/bulkInsert`, {
-            classroom_id: classroomId,
-            student_ids: studentIds,
-        });
+        const response = await axios.post<{ message?: string }>(
+            `/students/bulkInsert`,
+            {
+                classroom_id: classroomId,
+                student_ids: studentIds,
+            },
+        );
 
         if (response.data.message) {
             toast.success("Students added", {
                 description: response.data.message,
             });
         }
-
-
     } catch (error: any) {
         if (error.response) {
             if (error.response.data && error.response.data.error) {
-                toast.error("Error adding students:",{
-                    description: error.response.data.error
+                toast.error("Error adding students:", {
+                    description: error.response.data.error,
                 });
             } else {
-                toast.error("Error adding students: ",{
-                    description: error.response.statusText
+                toast.error("Error adding students: ", {
+                    description: error.response.statusText,
                 });
             }
         } else if (error.request) {
-            toast.error("Error adding students:",{
-                description: "No response received from server"
-            } );
+            toast.error("Error adding students:", {
+                description: "No response received from server",
+            });
         } else {
             toast.error("Error adding students: " + error.message);
         }
     }
 }
-
-
 
 function handleEdit(student_id: number) {
     console.log("Student ID:", student_id); // Check the type and value of classroomId

@@ -20,6 +20,15 @@ class ClassroomController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function resetAttendance(Classroom $classroom)
+    {
+        $classroom->students()->each(function ($student) {
+            $student->attendances()->delete();
+        });
+
+        return redirect()->route('classroom.show', $classroom->id)
+                         ->with('success', 'Attendance reset successfully.');
+    }
     public function index(Request $request)
     {
         // Eager load classrooms with majors and faculties
@@ -53,17 +62,30 @@ class ClassroomController extends Controller
      */
     public function show(Classroom $classroom)
     {
-        // Eager load the students with their major, faculty, and filtered attendances
         $classroom->load(['students' => function ($query) use ($classroom) {
             $query->with(['major.faculty', 'attendances' => function ($query) use ($classroom) {
                 $query->where('classroom_id', $classroom->id)->with('course');
             }]);
         }, 'courses', 'major.faculty']);
+
+        // Calculate the total attendance for each student per course
+        foreach ($classroom->students as $student) {
+            $courseAttendance = $student->attendances->groupBy('course_id')->map(function ($attendances) {
+                $courseName = $attendances->first()->course->name;
+                $totalAttendance = $attendances->sum('amount');
+                return [
+                    'course_name' => $courseName,
+                    'total_attendance' => $totalAttendance
+                ];
+            });
+
+            $student->courseAttendance = $courseAttendance;
+        }
+
         $allCourses = Course::whereHas('major', function ($query) use ($classroom) {
             $query->where('id', $classroom->major_id);
         })->get();
 
-        // Fetch class schedules for all weekdays
         $schedules = ClassSchedule::with(['course', 'classroom.major.faculty', 'teacher'])
             ->whereIn('day', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
             ->where('classroom_id', $classroom->id)
@@ -72,7 +94,6 @@ class ClassroomController extends Controller
         $allTeachers = Teacher::all();
         $currentDateTime = Carbon::now()->englishDayOfWeek;
 
-        // Return the view with the necessary data
         return Inertia::render('Classroom/Show', [
             'classroom' => $classroom,
             'students' => $classroom->students,
@@ -170,13 +191,22 @@ class ClassroomController extends Controller
             return redirect()->back()->with('qrcode', 'Student is not in this class.');
         }
 
-        // If student is in the class, update attendance
-        Attendance::where('student_id', $validatedData['student_id'])
-            ->where('course_id', $validatedData['course_id'])
-            ->where('classroom_id', $validatedData['classroom_id'])
-            ->update(['attended' => 'present']);
+        // Update attendance if it exists
+        $attendance = Attendance::where('student_id', $validatedData['student_id'])
+                                ->where('course_id', $validatedData['course_id'])
+                                ->where('classroom_id', $validatedData['classroom_id'])
+                                ->first();
 
-        return redirect()->route('classroom.attendance', $classroom->id)->with('success', 'Attendance marked successfully.');
+        if ($attendance) {
+            // If attendance record exists, update it and increment the amount
+            $attendance->attended = 'present';
+            $attendance->amount = $attendance->amount ? $attendance->amount + 1 : 1;
+            $attendance->save();
+
+            return redirect()->route('classroom.attendance', $classroom->id)->with('success', 'Attendance marked successfully.');
+        } else {
+            return redirect()->back()->with('qrcode', 'Attendance record not found.');
+        }
     }
     /**
      * Show the attendance page for a classroom.

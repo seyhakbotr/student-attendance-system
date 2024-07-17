@@ -219,7 +219,7 @@ const props = defineProps<{
         <div class="flex">
             <div class="flex-1">
                 <div v-if="!classroomSchedule">
-                    <p>This is the weekend. No classes scheduled.</p>
+                    <p>No classes/course scheduled.</p>
                 </div>
                 <div v-else>
                     <h1 class="text-4xl text-primary-accent font-extrabold">

@@ -116,7 +116,6 @@ class StudentController extends Controller
             DB::commit();
 
             // Redirect back with a success message
-            return redirect()->back()->with("success", "Student added successfully!");
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
@@ -272,6 +271,19 @@ class StudentController extends Controller
         return redirect()->back()->with('success', 'Selected students deleted Successfully!');
     }
 
+    public function handleBulkDetach(Request $request): IlluminateRedirectResponse
+    {
+        $ids = $request->input('ids');
+        $classroomId = $request->input('classroom_id'); // Get the classroom ID from the request
+
+        $students = Student::whereIn('id', $ids)->get();
+
+        foreach ($students as $student) {
+            $student->classrooms()->detach($classroomId);
+        }
+
+        return redirect()->back()->with('success', 'Selected students detached from the classroom successfully!');
+    }
     public function index(): Response
     {
         $students = Student::with(['major.faculty'])
