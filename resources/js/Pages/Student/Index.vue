@@ -4,7 +4,7 @@ import type { Student } from "@/Components/payments/columns";
 import { onMounted, ref, reactive } from "vue";
 import { columns } from "@/Components/students/columns";
 import DataTable from "@/Components/students/DataTable.vue";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -14,10 +14,10 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+} from "@/Components/ui/dialog";
+import { Input } from "@/Components/ui/input";
 import Label from "@/Components/ui/label/Label.vue";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { router, usePage } from "@inertiajs/vue3";
 import { toast } from "vue-sonner";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
@@ -33,7 +33,7 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import { computed } from "vue";
 const props = defineProps<{
     students: Student[];

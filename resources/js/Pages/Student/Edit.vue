@@ -20,7 +20,7 @@ import type { Student } from "@/Components/payments/columns";
 import type { Major } from "@/Components/major/columns";
 import type { Classroom } from "@/Pages/Classroom/Index.vue";
 import ComboBox from "@/Components/ComboBox.vue";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import {
     Select,
     SelectContent,
@@ -29,7 +29,7 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 const props = defineProps<{
     student: Student;
     faculties: Faculty[];

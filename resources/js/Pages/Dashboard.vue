@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
-import { BarChart } from "@/components/ui/chart-bar";
-import { DonutChart } from "@/components/ui/chart-donut";
+import { BarChart } from "../Components/ui/chart-bar";
+import { DonutChart } from "../Components/ui/chart-donut";
 
 const props = defineProps<{
     majorCount: number;

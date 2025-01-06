@@ -9,7 +9,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/Components/ui/alert-dialog";
 import { Button } from "@/Components/ui/button";
 import { toast } from "vue-sonner";
 interface DeleteConfirmationProps {

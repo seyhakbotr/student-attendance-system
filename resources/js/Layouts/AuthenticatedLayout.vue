@@ -28,7 +28,7 @@ import {
 } from "lucide-vue-next";
 import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 import { Input } from "@/Components/ui/input";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/Components/ui/sonner";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
 import { Head } from "@inertiajs/vue3";
 const isDark = useDark();

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import Label from "@/Components/ui/label/Label.vue";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/Components/ui/input";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { router } from "@inertiajs/vue3";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import type { Student } from "@/Components/payments/columns";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
 import {
@@ -15,7 +15,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{

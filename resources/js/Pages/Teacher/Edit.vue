@@ -23,7 +23,7 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import { Teacher } from "@/Components/teachers/columns";
 import { Classrooms } from "../Classroom/Index.vue";
 

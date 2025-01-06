@@ -3,7 +3,7 @@ import { h } from "vue";
 import DataTableDropDown from "./DataTableDropDown.vue";
 import { ArrowUpDown } from "lucide-vue-next";
 import { Button } from "../ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "../ui/checkbox";
 import { router } from "@inertiajs/vue3";
 import { toast } from "vue-sonner";
 import { Classrooms } from "@/Pages/Classroom/Index.vue";

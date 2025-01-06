@@ -23,7 +23,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/Components/ui/breadcrumb";
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";
 
 defineProps({

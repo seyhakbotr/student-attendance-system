@@ -7,9 +7,9 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogClose,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import Button from "@/Components/ui/button/Button.vue";
 import Label from "@/Components/ui/label/Label.vue";
 import ComboBox from "@/Components/ComboBox.vue";

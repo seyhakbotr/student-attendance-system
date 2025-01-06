@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/vue-table";
 import { h } from "vue";
 import { Button } from "../ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "../ui/checkbox";
 import { router } from "@inertiajs/vue3";
 import type { Major } from "../major/columns";
 import { toast } from "vue-sonner";

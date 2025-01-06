@@ -7,7 +7,7 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogClose,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import Button from "@/Components/ui/button/Button.vue";
 import Label from "@/Components/ui/label/Label.vue";
 import Input from "@/Components/ui/input/Input.vue";

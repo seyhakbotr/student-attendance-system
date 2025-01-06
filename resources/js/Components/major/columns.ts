@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/vue-table";
 import { h } from "vue";
 import { ArrowUpDown } from "lucide-vue-next";
 import { Button } from "../ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "../ui/checkbox";
 import { router } from "@inertiajs/vue3";
 import { toast } from "vue-sonner";
 import type { Faculty } from "../faculty/columns";

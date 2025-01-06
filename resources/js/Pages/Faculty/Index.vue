@@ -5,7 +5,7 @@ import { onMounted } from "vue";
 import { columns } from "@/Components/faculty/columns";
 import { ref } from "vue";
 import DataTable from "@/Components/faculty/DataTable.vue";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -14,8 +14,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+} from "@/Components/ui/dialog";
+import { Input } from "@/Components/ui/input";
 import Label from "@/Components/ui/label/Label.vue";
 import { reactive } from "vue";
 import { router, usePage } from "@inertiajs/vue3";

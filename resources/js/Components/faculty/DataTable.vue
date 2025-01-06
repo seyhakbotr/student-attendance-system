@@ -12,14 +12,14 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/Components/ui/dropdown-menu";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 
 import { valueUpdater } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ import {
     ChevronsLeft,
     ChevronsRight,
 } from "lucide-vue-next";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { h, ref } from "vue";
 import { reactive } from "vue";
@@ -51,7 +51,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 
 const props = defineProps<{
     columns: ColumnDef<TData, TValue>[];

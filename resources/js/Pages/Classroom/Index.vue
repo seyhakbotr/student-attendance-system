@@ -9,7 +9,7 @@ import ComboBox from "@/Components/ComboBox.vue";
 import type { Faculty } from "@/Components/faculty/columns";
 import AddClassroom from "./partials/AddClassroom.vue";
 import EditClassroom from "./partials/EditClassroom.vue";
-import { Progress } from "@/components/ui/progress";
+import { Progress } from "../../Components/ui/progress";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import {
@@ -28,7 +28,7 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import { useIntersectionObserver } from "@vueuse/core";
 
 const props = defineProps<{

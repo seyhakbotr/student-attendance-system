@@ -49,7 +49,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 import { router } from "@inertiajs/vue3";
 import { ref } from "vue";
 import { toast } from "vue-sonner";

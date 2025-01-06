@@ -9,7 +9,7 @@ import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card'
 import { Input } from '@/Components/ui/input'
 import { Label } from '@/Components/ui/label'
-import Checkbox from '@/components/ui/checkbox/Checkbox.vue';
+import Checkbox from '@/Components/ui/checkbox/Checkbox.vue';
 defineProps<{
     canResetPassword?: boolean;
     status?: string;

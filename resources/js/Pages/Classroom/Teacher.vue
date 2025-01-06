@@ -12,7 +12,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 import Input from "@/Components/ui/input/Input.vue";
 import {
     Dialog,
@@ -23,7 +23,7 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogClose,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import { Classrooms } from "./Index.vue";
 
 import { Breadcrumb as BreadcrumbType } from "@/types/Breadcrumb";

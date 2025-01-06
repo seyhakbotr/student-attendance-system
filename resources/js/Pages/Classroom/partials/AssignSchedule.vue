@@ -7,7 +7,7 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogClose,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import {
     Select,
     SelectContent,
@@ -16,7 +16,7 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import { ref } from "vue";
 
 import Button from "@/Components/ui/button/Button.vue";

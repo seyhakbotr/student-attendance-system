@@ -47,7 +47,7 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogClose,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 
 const props = defineProps({
     student: Object,
